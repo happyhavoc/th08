@@ -608,8 +608,8 @@ th08::TextHelper::IsAllocated,0x43f881,0x17,__thiscall,,u8,TextHelper*
 th08::TextHelper::CopyTextToSurface,0x43f898,0xe8,__thiscall,,u32,TextHelper*,IDirect3DSurface8*
 th08::TextHelper::CreateTextBuffer,0x43f980,0x23,unknown,,u8
 th08::TextHelper::ReleaseTextBuffer,0x43f9a3,0x25,unknown,,u8
-th08::TextHelper::RenderTextBold,0x43f9c8,0x321,__stdcall,,void,i32
-th08::TextHelper::RenderText,0x43fce9,0x319,unknown,,u8
+th08::TextHelper::RenderTextToTextureBold,0x43f9c8,0x321,__stdcall,,void,i32
+th08::TextHelper::RenderTextToTexture,0x43fce9,0x319,unknown,,u8
 th08::ItemManager::ItemManager,0x440010,0x34,__thiscall,,ItemManager*,ItemManager*
 th08::Item::Item,0x440050,0x4e,__thiscall,,Item*,Item*
 th08::ItemManager::SpawnItem,0x4400a0,0x3ca,__thiscall,,Item*,ItemManager*,_D3DVECTOR*,i32,i32

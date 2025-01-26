@@ -93,6 +93,7 @@ def configure(build_type):
         cxx_sources = [
             "utils",
             "Global",
+            "TextHelper",
             "main",
             "Midi",
             "Supervisor",
