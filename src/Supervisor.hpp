@@ -8,6 +8,7 @@
 #include "diffbuild.hpp"
 #include "inttypes.hpp"
 #include "utils.hpp"
+#include "ZunBool.hpp"
 
 namespace th08
 {
@@ -113,6 +114,31 @@ struct Supervisor
     u32 IsMusicPreloadEnabled()
     {
         return this->m_Cfg.opts.preloadMusic;
+    }
+
+    ZunBool IsHardwareBlendingEnabled()
+    {
+        return m_Cfg.opts.useD3dHwTextureBlending;
+    }
+
+    ZunBool IsVertexBufferDisabled()
+    {
+        return m_Cfg.opts.dontUseVertexBuf;
+    }
+
+    ZunBool Is16bitColorMode()
+    {
+        return m_Cfg.opts.force16bitTextures;
+    }
+
+    ZunBool IsReferenceRasterizerMode()
+    {
+        return m_Cfg.opts.referenceRasterizerMode;
+    }
+
+    ZunBool IsWindowed()
+    {
+        return m_Cfg.windowed;
     }
 
     void EnterCriticalSectionWrapper(int id)
