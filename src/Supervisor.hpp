@@ -98,6 +98,7 @@ struct Supervisor
 {
     ZunResult LoadConfig(char *configFile);
     void ThreadClose();
+    void InitializeCriticalSections();
 
     u32 IsShotSlowEnabled()
     {

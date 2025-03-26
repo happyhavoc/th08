@@ -188,5 +188,12 @@ void Supervisor::ThreadClose()
         m_Unk28c = FALSE;
     }
 }
+
+void Supervisor::InitializeCriticalSections() {
+    for (u32 i = 0; i < ARRAY_SIZE_SIGNED(m_CriticalSections); i++)
+    {
+        InitializeCriticalSection(&m_CriticalSections[i]);
+    }
+}
 #pragma optimize("", on)
 }; // namespace th08
