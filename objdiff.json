@@ -59,6 +59,12 @@
       "reverse_fn_order": false
     },
     {
+      "name": "Supervisor",
+      "target_path": "build/objdiff/orig/Supervisor.obj",
+      "base_path": "build/objdiff/reimpl/Supervisor.obj",
+      "reverse_fn_order": false
+    },
+    {
       "name": "TextHelper",
       "target_path": "build/objdiff/orig/TextHelper.obj",
       "base_path": "build/objdiff/reimpl/TextHelper.obj",
