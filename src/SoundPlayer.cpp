@@ -303,7 +303,7 @@ ZunResult SoundPlayer::StartBGM(char *path)
     notifySize -= (notifySize % blockAlign);
     this->bgmUpdateEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
     this->bgmThreadHandle =
-        CreateThread(NULL, 0, SoundPlayer::BGMPlayerThread, g_Supervisor.hwndGameWindow, 0, &this->bgmThreadId);
+        CreateThread(NULL, 0, SoundPlayer::BGMPlayerThread, g_Supervisor.m_HwndGameWindow, 0, &this->bgmThreadId);
     res = this->manager->CreateStreaming(&this->bgm, path, DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY,
                                          GUID_NULL, 16, notifySize, this->bgmUpdateEvent, fmtData);
     if (FAILED(res))
@@ -391,7 +391,7 @@ ZunResult SoundPlayer::LoadBGM(i32 idx)
     if (this->manager == NULL)
         return ZUN_ERROR;
 
-    if (g_Supervisor.cfg.musicMode == OFF)
+    if (g_Supervisor.m_Cfg.musicMode == OFF)
         return ZUN_ERROR;
 
     if (this->dsoundHdl == NULL)
@@ -411,7 +411,7 @@ ZunResult SoundPlayer::LoadBGM(i32 idx)
     notifySize -= (notifySize % blockAlign);
     this->bgmUpdateEvent = CreateEventA(NULL, FALSE, FALSE, NULL);
     this->bgmThreadHandle =
-        CreateThread(NULL, 0, SoundPlayer::BGMPlayerThread, g_Supervisor.hwndGameWindow, 0, &this->bgmThreadId);
+        CreateThread(NULL, 0, SoundPlayer::BGMPlayerThread, g_Supervisor.m_HwndGameWindow, 0, &this->bgmThreadId);
     hr = this->manager->CreateStreamingFromMemory(
         &this->bgm, this->unk1f00[idx], this->bgmPreloadAllocSizes[idx], this->bgmPreloadFmtData[idx],
         DSBCAPS_GETCURRENTPOSITION2 | DSBCAPS_CTRLPOSITIONNOTIFY, GUID_NULL, 16, notifySize, this->bgmUpdateEvent);
@@ -752,7 +752,7 @@ loop:
         g_SoundPlayer.FadeOut(commandCursor->arg1);
         break;
     case 6:
-        if (g_Supervisor.cfg.musicMode == WAV)
+        if (g_Supervisor.m_Cfg.musicMode == WAV)
         {
             if (this->bgm->m_bIsLocked)
             {
@@ -766,7 +766,7 @@ loop:
         }
         break;
     case 7:
-        if (g_Supervisor.cfg.musicMode == WAV)
+        if (g_Supervisor.m_Cfg.musicMode == WAV)
         {
             if (this->bgm->m_bIsLocked)
             {
@@ -798,7 +798,7 @@ loop:
     }
 
 loop_breakout:
-    if (!g_Supervisor.cfg.playSounds)
+    if (!g_Supervisor.m_Cfg.playSounds)
     {
         return this->commandQueue[0].opcode;
     }
