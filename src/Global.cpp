@@ -692,6 +692,18 @@ u8 *Controller::GetControllerState()
     }
 }
 
+void Controller::ResetKeyboard(void)
+{
+    u8 key_states[256];
+
+    GetKeyboardState(key_states);
+    for (i32 idx = 0; idx < 256; idx++)
+    {
+        *(key_states + idx) &= 0x7f;
+    }
+    SetKeyboardState(key_states);
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
