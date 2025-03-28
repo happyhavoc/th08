@@ -10,7 +10,7 @@ void Supervisor::ThreadClose()
 {
     if (m_Unk284 != NULL)
     {
-        utils::DebugPrint2("info : Sub Thread Close Request\n");
+        utils::GuiDebugPrint("info : Sub Thread Close Request\n");
         m_Unk28c = TRUE;
 
         while (WaitForSingleObject(m_Unk284, 1000) == WAIT_TIMEOUT)

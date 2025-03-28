@@ -12,5 +12,6 @@ namespace th08
 namespace utils
 {
 void DebugPrint(char *fmt, ...);
+void GuiDebugPrint(char *fmt, ...);
 }; // namespace utils
 }; // namespace th08
