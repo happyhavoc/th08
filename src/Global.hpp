@@ -36,7 +36,7 @@ public:
     }
 
     INT16 m_Priority;
-    UINT16 m_IsHeapAllocated;
+    UINT16 m_IsHeapAllocated : 1;
     ChainCallback m_Callback;
     ChainLifetimeCallback m_AddedCallback;
     ChainLifetimeCallback m_DeletedCallback;

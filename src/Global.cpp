@@ -15,6 +15,18 @@ Chain::~Chain()
 {
 }
 
+ChainElem::ChainElem()
+{
+    m_Prev = NULL;
+    m_Next = NULL;
+    m_Callback = NULL;
+    m_UnkPtr = this;
+    m_AddedCallback = NULL;
+    m_DeletedCallback = NULL;
+    m_Priority = 0;
+    m_IsHeapAllocated = 0;
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
