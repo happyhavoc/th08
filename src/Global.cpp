@@ -43,6 +43,50 @@ Chain::Chain()
 {
 }
 
+#pragma var_order(cur, res)
+int Chain::AddToCalcChain(ChainElem *elem, int priority)
+{
+    ChainElem *cur = &m_CalcChain;
+    int res = 0;
+
+    if (elem->m_AddedCallback != NULL)
+    {
+        res = elem->m_AddedCallback(elem->m_Arg);
+        elem->m_AddedCallback = NULL;
+    }
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+    elem->m_Priority = priority;
+
+    while (cur->m_Next != NULL)
+    {
+        if (cur->m_Priority > priority)
+            break;
+        cur = cur->m_Next;
+    }
+
+    if (cur->m_Priority > priority)
+    {
+        elem->m_Next = cur;
+        elem->m_Prev = cur->m_Prev;
+
+        if (elem->m_Prev != NULL)
+            elem->m_Prev->m_Next = elem;
+
+        cur->m_Prev = elem;
+    }
+    else
+    {
+        elem->m_Next = NULL;
+        elem->m_Prev = cur;
+        cur->m_Next = elem;
+    }
+
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+
+    return res;
+}
+
 void Chain::ReleaseSingleChain(ChainElem *root)
 {
     // NOTE: Those names are like this to get perfect stack frame matching
