@@ -17,7 +17,8 @@ th08::Controller::GetControllerInput
 th08::Controller::SetButtonFromDirectInputJoystate
 th08::Controller::SetButtonFromControllerInputs
 th08::Controller::GetControllerState
-th08::Controller:GetInput
+th08::Controller::GetInput
+th08::Controller::ResetKeyboard
 th08::FileSystem::Decrypt
 th08::FileSystem::TryDecryptFromTable
 th08::FileSystem::Encrypt
