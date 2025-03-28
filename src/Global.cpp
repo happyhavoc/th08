@@ -511,13 +511,13 @@ u16 Controller::GetControllerInput(u16 buttons)
         {
             i32 retryCount = 0;
 
-            utils::DebugPrint2("error : DIERR_INPUTLOST\n");
+            utils::DebugPrint("error : DIERR_INPUTLOST\n");
             aaa = g_Supervisor.m_Controller->Acquire();
 
             while (aaa == DIERR_INPUTLOST)
             {
                 aaa = g_Supervisor.m_Controller->Acquire();
-                utils::DebugPrint2("error : DIERR_INPUTLOST %d\n", retryCount);
+                utils::DebugPrint("error : DIERR_INPUTLOST %d\n", retryCount);
 
                 retryCount++;
 
