@@ -131,6 +131,72 @@ int Chain::AddToDrawChain(ChainElem *elem, int priority)
     return res;
 }
 
+#pragma var_order(current, updatedCount, result, tmp1)
+int Chain::RunCalcChain()
+{
+    ChainElem *tmp1;
+    ChainElem *current;
+    int updatedCount;
+    ChainCallbackResult result;
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+
+restart_from_first_job:
+    updatedCount = 0;
+    current = &m_CalcChain;
+
+    while (current != NULL)
+    {
+        if (current->m_Callback != NULL)
+        {
+        execute_again:
+            g_Supervisor.LeaveCriticalSectionWrapper(0);
+            result = current->m_Callback(current->m_Arg);
+            g_Supervisor.EnterCriticalSectionWrapper(0);
+
+            switch (result)
+            {
+            case CHAIN_CALLBACK_RESULT_CONTINUE_AND_REMOVE_JOB:
+                tmp1 = current;
+                current = current->m_Next;
+                Cut(tmp1);
+
+                updatedCount++;
+                continue;
+
+            case CHAIN_CALLBACK_RESULT_EXECUTE_AGAIN:
+                goto execute_again;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_SUCCESS:
+                updatedCount = 0;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_BREAK:
+                updatedCount = 1;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_ERROR:
+                updatedCount = -1;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_RESTART_FROM_FIRST_JOB:
+                goto restart_from_first_job;
+
+            default:
+                break;
+            }
+
+            updatedCount++;
+        }
+
+        current = current->m_Next;
+    }
+
+loop_exit:
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+    return updatedCount;
+}
+
 void Chain::ReleaseSingleChain(ChainElem *root)
 {
     // NOTE: Those names are like this to get perfect stack frame matching
