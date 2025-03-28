@@ -412,8 +412,21 @@ u16 Controller::GetJoystickCaps(void)
     return 0;
 }
 
-u32 Controller::SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest,
-                                              u16 touhouButton, u32 inputButtons)
+u32 Controller::SetButtonFromDirectInputJoystate(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
+                                                 u8 *inputButtons)
+{
+    if (controllerButtonToTest < 0)
+    {
+        return 0;
+    }
+
+    *outButtons |= (inputButtons[controllerButtonToTest] & 0x80 ? touhouButton : 0);
+
+    return inputButtons[controllerButtonToTest] & 0x80 ? touhouButton : 0;
+}
+
+u32 Controller::SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
+                                              u32 inputButtons)
 {
     DWORD mask;
 
