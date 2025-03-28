@@ -11,6 +11,10 @@ DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext);
 DIFFABLE_STATIC(PbgArchive, g_PbgArchive);
 DIFFABLE_STATIC(ZunMemory, g_ZunMemory);
 
+Chain::~Chain()
+{
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {

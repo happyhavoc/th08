@@ -8,6 +8,68 @@
 
 namespace th08
 {
+enum ChainCallbackResult
+{
+    CHAIN_CALLBACK_RESULT_CONTINUE_AND_REMOVE_JOB = (unsigned int)0,
+    CHAIN_CALLBACK_RESULT_CONTINUE = (unsigned int)1,
+    CHAIN_CALLBACK_RESULT_EXECUTE_AGAIN = (unsigned int)2,
+    CHAIN_CALLBACK_RESULT_BREAK = (unsigned int)3,
+    CHAIN_CALLBACK_RESULT_EXIT_GAME_SUCCESS = (unsigned int)4,
+    CHAIN_CALLBACK_RESULT_EXIT_GAME_ERROR = (unsigned int)5,
+    CHAIN_CALLBACK_RESULT_RESTART_FROM_FIRST_JOB = (unsigned int)6,
+};
+
+typedef ChainCallbackResult (*ChainCallback)(void *);
+typedef ZunResult (*ChainLifetimeCallback)(void *);
+
+class ChainElem
+{
+public:
+    ChainElem();
+    ~ChainElem();
+
+    void SetCallback(ChainCallback callback)
+    {
+        m_Callback = callback;
+        m_AddedCallback = NULL;
+        m_DeletedCallback = NULL;
+    }
+
+    INT16 m_Priority;
+    UINT16 m_IsHeapAllocated;
+    ChainCallback m_Callback;
+    ChainLifetimeCallback m_AddedCallback;
+    ChainLifetimeCallback m_DeletedCallback;
+    struct ChainElem *m_Prev;
+    struct ChainElem *m_Next;
+    struct ChainElem *m_UnkPtr;
+    void *m_Arg;
+};
+
+// TODO: rename to funcChainInf
+class Chain
+{
+private:
+    ChainElem m_CalcChain;
+    ChainElem m_DrawChain;
+
+    void ReleaseSingleChain(ChainElem *root);
+    void CutImpl(ChainElem *to_remove);
+
+public:
+    Chain();
+    ~Chain();
+
+    void Cut(ChainElem *to_remove);
+    void Release();
+    int AddToCalcChain(ChainElem *elem, int priority);
+    int AddToDrawChain(ChainElem *elem, int priority);
+    int RunDrawChain();
+    int RunCalcChain();
+
+    ChainElem *CreateElem(ChainCallback callback);
+};
+
 namespace FileSystem
 {
 LPBYTE Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes);
