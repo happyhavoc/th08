@@ -36,8 +36,8 @@ class ChainElem
         m_DeletedCallback = NULL;
     }
 
-    INT16 m_Priority;
-    UINT16 m_IsHeapAllocated : 1;
+    short m_Priority;
+    u16 m_IsHeapAllocated : 1;
     ChainCallback m_Callback;
     ChainLifetimeCallback m_AddedCallback;
     ChainLifetimeCallback m_DeletedCallback;
@@ -77,7 +77,7 @@ enum TouhouButton
 namespace Controller
 {
 u16 GetJoystickCaps();
-u32 SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest, enum TouhouButton touhouButton,
+u32 SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
                                   u32 inputButtons);
 
 unsigned int SetButtonFromDirectInputJoystate(u16 *outButtons, i16 controllerButtonToTest,

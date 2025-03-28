@@ -412,6 +412,23 @@ u16 Controller::GetJoystickCaps(void)
     return 0;
 }
 
+u32 Controller::SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest,
+                                              u16 touhouButton, u32 inputButtons)
+{
+    DWORD mask;
+
+    if (controllerButtonToTest < 0)
+    {
+        return 0;
+    }
+
+    mask = 1 << controllerButtonToTest;
+
+    *outButtons |= (inputButtons & mask ? touhouButton : 0);
+
+    return inputButtons & mask ? touhouButton : 0;
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
