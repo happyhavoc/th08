@@ -129,7 +129,7 @@ struct Supervisor
     D3DCAPS8 m_D3dCaps;
     HANDLE m_Unk284;
     unknown_fields(0x288, 0x4);
-    DWORD m_Unk28c;
+    BOOL m_Unk28c;
     DWORD m_Unk290;
     unknown_fields(0x294, 0x4);
     CRITICAL_SECTION m_CriticalSections[4];
