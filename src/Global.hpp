@@ -278,6 +278,8 @@ class ZunMemory
     BOOL m_bRegistryInUse;
 };
 
+f32 AddNormalizeAngle(f32 a, f32 b);
+
 DIFFABLE_EXTERN(Rng, g_Rng);
 DIFFABLE_EXTERN(GameErrorContext, g_GameErrorContext);
 DIFFABLE_EXTERN(PbgArchive, g_PbgArchive);
