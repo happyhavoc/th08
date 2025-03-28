@@ -278,6 +278,9 @@ class ZunMemory
     BOOL m_bRegistryInUse;
 };
 
+f32 AddNormalizeAngle(f32 a, f32 b);
+void Rotate(D3DXVECTOR3 *outVector, D3DXVECTOR3 *point, f32 angle);
+
 DIFFABLE_EXTERN(Rng, g_Rng);
 DIFFABLE_EXTERN(GameErrorContext, g_GameErrorContext);
 DIFFABLE_EXTERN(PbgArchive, g_PbgArchive);
