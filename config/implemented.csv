@@ -13,7 +13,7 @@ th08::Rng::GetRandomF32
 th08::Rng::GetRandomF32Signed
 th08::ZunMemory::Alloc
 th08::ZunMemory::Free
-th08::ZunMemory::AddToToRegistry
+th08::ZunMemory::AddToRegistry
 th08::ZunMemory::RemoveFromRegistry
 th08::GameErrorContext::GameErrorContext
 th08::MidiTimer::OnTimerElapsed
