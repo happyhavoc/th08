@@ -78,6 +78,11 @@ struct Supervisor
 {
     void ThreadClose();
 
+    u32 IsShotSlowEnabled()
+    {
+        return this->m_Cfg.shotSlow;
+    }
+
     u32 IsMusicPreloadEnabled()
     {
         return this->m_Cfg.opts.preloadMusic;
@@ -140,5 +145,6 @@ struct Supervisor
 };
 C_ASSERT(sizeof(Supervisor) == 0x364);
 
+DIFFABLE_EXTERN(ControllerMapping, g_ControllerMapping)
 DIFFABLE_EXTERN(Supervisor, g_Supervisor);
 }; // namespace th08

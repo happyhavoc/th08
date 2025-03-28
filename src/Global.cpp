@@ -412,6 +412,191 @@ u16 Controller::GetJoystickCaps(void)
     return 0;
 }
 
+#define JOYSTICK_MIDPOINT(min, max) ((min + max) / 2)
+#define JOYSTICK_BUTTON_PRESSED(button, x, y) (x > y ? button : 0)
+#define JOYSTICK_BUTTON_PRESSED_INVERT(button, x, y) (x < y ? button : 0)
+#define KEYBOARD_KEY_PRESSED(button, x) keyboardState[x] & 0x80 ? button : 0
+
+u16 Controller::GetControllerInput(u16 buttons)
+{
+    // NOTE: Those names are like this to get perfect stack frame matching
+    // TODO: Give meaningfull names that still match.
+    JOYINFOEX aa;
+    u32 ab;
+    u32 ac;
+    DIJOYSTATE2 a0;
+    u32 a2;
+    HRESULT aaa;
+
+    if (g_Supervisor.m_Controller == NULL)
+    {
+        memset(&aa, 0, sizeof(aa));
+        aa.dwSize = sizeof(JOYINFOEX);
+        aa.dwFlags = JOY_RETURNALL;
+
+        if (joyGetPosEx(0, &aa) != MMSYSERR_NOERROR)
+        {
+            return buttons;
+        }
+
+        ac = SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.shotButton, TH_BUTTON_SHOOT,
+                                           aa.dwButtons);
+
+        if (g_Supervisor.IsShotSlowEnabled())
+        {
+            if (ac != 0)
+            {
+                if (g_FocusButtonConflictState < 20)
+                {
+                    g_FocusButtonConflictState++;
+                }
+
+                if (g_FocusButtonConflictState >= 10)
+                {
+                    buttons |= TH_BUTTON_FOCUS;
+                }
+            }
+            else
+            {
+                if (g_FocusButtonConflictState > 10)
+                {
+                    g_FocusButtonConflictState -= 10;
+                    buttons |= TH_BUTTON_FOCUS;
+                }
+                else
+                {
+                    g_FocusButtonConflictState = 0;
+                }
+            }
+        }
+
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_BOMB,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_FOCUS,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.menuButton, TH_BUTTON_MENU,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.upButton, TH_BUTTON_UP,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.downButton, TH_BUTTON_DOWN,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.leftButton, TH_BUTTON_LEFT,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.rightButton, TH_BUTTON_RIGHT,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.skipButton, TH_BUTTON_SKIP,
+                                      aa.dwButtons);
+
+        ab = ((g_JoystickCaps.wXmax - g_JoystickCaps.wXmin) / 2 / 2);
+
+        buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_RIGHT, aa.dwXpos,
+                                           JOYSTICK_MIDPOINT(g_JoystickCaps.wXmin, g_JoystickCaps.wXmax) + ab);
+        buttons |= JOYSTICK_BUTTON_PRESSED(
+            TH_BUTTON_LEFT, JOYSTICK_MIDPOINT(g_JoystickCaps.wXmin, g_JoystickCaps.wXmax) - ab, aa.dwXpos);
+
+        ab = ((g_JoystickCaps.wYmax - g_JoystickCaps.wYmin) / 2 / 2);
+        buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_DOWN, aa.dwYpos,
+                                           JOYSTICK_MIDPOINT(g_JoystickCaps.wYmin, g_JoystickCaps.wYmax) + ab);
+        buttons |= JOYSTICK_BUTTON_PRESSED(
+            TH_BUTTON_UP, JOYSTICK_MIDPOINT(g_JoystickCaps.wYmin, g_JoystickCaps.wYmax) - ab, aa.dwYpos);
+
+        return buttons;
+    }
+    else
+    {
+        // FIXME: Next if not matching.
+        aaa = g_Supervisor.m_Controller->Poll();
+        if (FAILED(aaa))
+        {
+            i32 retryCount = 0;
+
+            utils::DebugPrint2("error : DIERR_INPUTLOST\n");
+            aaa = g_Supervisor.m_Controller->Acquire();
+
+            while (aaa == DIERR_INPUTLOST)
+            {
+                aaa = g_Supervisor.m_Controller->Acquire();
+                utils::DebugPrint2("error : DIERR_INPUTLOST %d\n", retryCount);
+
+                retryCount++;
+
+                if (retryCount >= 400)
+                {
+                    return buttons;
+                }
+            }
+
+            return buttons;
+        }
+        else
+        {
+            memset(&a0, 0, sizeof(a0));
+
+            aaa = g_Supervisor.m_Controller->GetDeviceState(sizeof(a0), &a0);
+
+            if (FAILED(aaa))
+            {
+                return buttons;
+            }
+
+            a2 = SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.shotButton,
+                                                  TH_BUTTON_SHOOT, a0.rgbButtons);
+
+            if (g_Supervisor.IsShotSlowEnabled())
+            {
+                if (a2 != 0)
+                {
+                    if (g_FocusButtonConflictState < 20)
+                    {
+                        g_FocusButtonConflictState++;
+                    }
+
+                    if (g_FocusButtonConflictState >= 10)
+                    {
+                        buttons |= TH_BUTTON_FOCUS;
+                    }
+                }
+                else
+                {
+                    if (g_FocusButtonConflictState > 10)
+                    {
+                        g_FocusButtonConflictState -= 10;
+                        buttons |= 0x4;
+                    }
+                    else
+                    {
+                        g_FocusButtonConflictState = 0;
+                    }
+                }
+            }
+
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_BOMB,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_FOCUS,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.menuButton, TH_BUTTON_MENU,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.upButton, TH_BUTTON_UP,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.downButton, TH_BUTTON_DOWN,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.leftButton, TH_BUTTON_LEFT,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.rightButton, TH_BUTTON_RIGHT,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.skipButton, TH_BUTTON_SKIP,
+                                             a0.rgbButtons);
+
+            buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_RIGHT, a0.lX, g_Supervisor.m_Cfg.padXAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED_INVERT(TH_BUTTON_LEFT, a0.lX, -g_Supervisor.m_Cfg.padXAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_DOWN, a0.lY, g_Supervisor.m_Cfg.padYAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED_INVERT(TH_BUTTON_UP, a0.lY, -g_Supervisor.m_Cfg.padYAxis);
+        }
+    }
+
+    return buttons;
+}
+
 u32 Controller::SetButtonFromDirectInputJoystate(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
                                                  u8 *inputButtons)
 {

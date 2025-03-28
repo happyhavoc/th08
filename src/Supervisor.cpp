@@ -2,6 +2,9 @@
 
 namespace th08
 {
+DIFFABLE_STATIC(ControllerMapping, g_ControllerMapping)
+DIFFABLE_STATIC(Supervisor, g_Supervisor);
+
 #pragma optimize("s", on)
 void Supervisor::ThreadClose()
 {
@@ -12,12 +15,11 @@ void Supervisor::ThreadClose()
 
         while (WaitForSingleObject(m_Unk284, 1000) == WAIT_TIMEOUT)
             Sleep(1);
-            
+
         CloseHandle(m_Unk284);
         m_Unk284 = NULL;
         m_Unk28c = FALSE;
     }
 }
 #pragma optimize("s", off)
-DIFFABLE_STATIC(Supervisor, g_Supervisor);
 }; // namespace th08
