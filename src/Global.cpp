@@ -3,13 +3,16 @@
 #include "utils.hpp"
 #include <limits.h>
 #include <stdio.h>
+#include "i18n.hpp"
 
 namespace th08
 {
-DIFFABLE_STATIC(Rng, g_Rng);
-DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext);
-DIFFABLE_STATIC(PbgArchive, g_PbgArchive);
-DIFFABLE_STATIC(ZunMemory, g_ZunMemory);
+DIFFABLE_STATIC(Rng, g_Rng)
+DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext)
+DIFFABLE_STATIC(PbgArchive, g_PbgArchive)
+DIFFABLE_STATIC(ZunMemory, g_ZunMemory)
+DIFFABLE_STATIC(JOYCAPSA, g_JoystickCaps)
+DIFFABLE_STATIC(u16, g_FocusButtonConflictState)
 
 Chain::~Chain()
 {
@@ -390,6 +393,23 @@ destroy_elem:
             }
         }
     }
+}
+
+u16 Controller::GetJoystickCaps(void)
+{
+    JOYINFOEX pji;
+
+    pji.dwSize = sizeof(JOYINFOEX);
+    pji.dwFlags = JOY_RETURNALL;
+
+    if (joyGetPosEx(0, &pji) != MMSYSERR_NOERROR)
+    {
+        g_GameErrorContext.Log(TH_ERR_NO_PAD_FOUND);
+        return 1;
+    }
+
+    joyGetDevCapsA(0, &g_JoystickCaps, sizeof(g_JoystickCaps));
+    return 0;
 }
 
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
