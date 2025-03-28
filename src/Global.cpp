@@ -43,6 +43,46 @@ Chain::Chain()
 {
 }
 
+void Chain::ReleaseSingleChain(ChainElem *root)
+{
+    // NOTE: Those names are like this to get perfect stack frame matching
+    // TODO: Give meaningfull names that still match.
+    ChainElem a0;
+    ChainElem *current;
+    ChainElem *tmp;
+    ChainElem *wasNext;
+
+    tmp = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+    a0.m_Next = tmp;
+
+    current = root;
+    while (current != NULL)
+    {
+        tmp->m_UnkPtr = current;
+        tmp->m_Next = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+        tmp = tmp->m_Next;
+        current = current->m_Next;
+    }
+
+    current = &a0;
+    while (current != NULL)
+    {
+        Cut(current->m_UnkPtr);
+        current = current->m_Next;
+    }
+
+    tmp = a0.m_Next;
+
+    while (tmp != NULL)
+    {
+        wasNext = tmp->m_Next;
+        g_ZunMemory.RemoveFromRegistry(tmp);
+        delete tmp;
+        tmp = NULL;
+        tmp = wasNext;
+    }
+}
+
 void Chain::Release()
 {
     g_Supervisor.ThreadClose();
