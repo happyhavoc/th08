@@ -21,7 +21,7 @@ LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
     LPBYTE outCursor = out;
 
     if (out == NULL)
@@ -130,7 +130,7 @@ LPBYTE FileSystem::Encrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
     LPBYTE outCursor = out;
 
     if (out == NULL)

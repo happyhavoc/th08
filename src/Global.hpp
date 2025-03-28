@@ -108,7 +108,8 @@ class ZunMemory
     ZunMemory();
     ~ZunMemory();
 
-    void *Alloc(size_t size, const char *debugText)
+    // NOTE: the default parameter for debugText is probably just __FILE__
+    void *Alloc(size_t size, const char *debugText = "d:\\cygwin\\home\\zun\\prog\\th08\\global.h")
     {
         return malloc(size);
     }
