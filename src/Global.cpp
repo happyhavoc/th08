@@ -409,18 +409,18 @@ f32 Rng::GetRandomF32Signed(void)
 
 ZunMemory::ZunMemory()
 {
-    m_Unk4000 = 0;
+    m_bRegistryInUse = FALSE;
 }
 
 ZunMemory::~ZunMemory()
 {
-    if (m_Unk4000)
+    if (m_bRegistryInUse)
     {
-        for (i32 i = 0; i < ARRAY_SIZE_SIGNED(m_Unk0); i++)
+        for (i32 i = 0; i < ARRAY_SIZE_SIGNED(m_Registry); i++)
         {
-            if (m_Unk0[i] != NULL)
+            if (m_Registry[i] != NULL)
             {
-                free(m_Unk0[i]);
+                free(m_Registry[i]);
             }
         }
     }
