@@ -53,6 +53,12 @@
             "reverse_fn_order": false
         },
         {
+            "name": "Supervisor",
+            "target_path": "build/objdiff/orig/Supervisor.obj",
+            "base_path": "build/objdiff/reimpl/Supervisor.obj",
+            "reverse_fn_order": false
+        },
+        {
             "name": "SoundPlayer",
             "target_path": "build/objdiff/orig/SoundPlayer.obj",
             "base_path": "build/objdiff/reimpl/SoundPlayer.obj",

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Supervisor.hpp"
 #include "ZunResult.hpp"
 #include "diffbuild.hpp"
 #include "inttypes.hpp"
@@ -173,4 +174,5 @@ DIFFABLE_EXTERN(Rng, g_Rng);
 DIFFABLE_EXTERN(GameErrorContext, g_GameErrorContext);
 DIFFABLE_EXTERN(PbgArchive, g_PbgArchive);
 DIFFABLE_EXTERN(ZunMemory, g_ZunMemory);
+DIFFABLE_EXTERN(ControllerMapping, g_ControllerMapping);
 }; // namespace th08

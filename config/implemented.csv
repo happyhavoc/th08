@@ -1,4 +1,5 @@
 th08::utils::DebugPrint
+th08::utils::GuiDebugPrint
 th08::FileSystem::Decrypt
 th08::FileSystem::TryDecryptFromTable
 th08::FileSystem::Encrypt
@@ -19,6 +20,7 @@ th08::GameErrorContext::GameErrorContext
 th08::MidiTimer::OnTimerElapsed
 th08::Supervisor::EnterCriticalSectionWrapper
 th08::Supervisor::LeaveCriticalSectionWrapper
+th08::Supervisor::LoadConfig
 WinMain
 th08::MidiDevice::MidiDevice
 th08::MidiDevice::~MidiDevice
