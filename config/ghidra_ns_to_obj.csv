@@ -1,4 +1,4 @@
-Global,th08::Chain,th08::Controller,th08::FileSystem,th08::GameErrorContext,th08::Rng,th08::ZunMemory
+Global,th08::Chain,th08::ChainElem,th08::Controller,th08::FileSystem,th08::GameErrorContext,th08::Rng,th08::ZunMemory
 Lzss,th08::Lzss
 main,WinMain
 Midi,th08::MidiDevice,th08::MidiTimer,th08::MidiOutput
