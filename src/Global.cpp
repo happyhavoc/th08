@@ -10,6 +10,7 @@ DIFFABLE_STATIC(Rng, g_Rng);
 DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext);
 DIFFABLE_STATIC(PbgArchive, g_PbgArchive);
 DIFFABLE_STATIC(ZunMemory, g_ZunMemory);
+DIFFABLE_STATIC_ASSIGN(ControllerMapping, g_ControllerMapping) = {0, 1, 2, 4, -1, -1, -1, -1, 3};
 
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)

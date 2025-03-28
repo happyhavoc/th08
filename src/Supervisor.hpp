@@ -10,6 +10,9 @@
 
 namespace th08
 {
+#define GAME_VERSION 0x80001
+#define ZWAV_MAGIC 'VAWZ'
+
 struct ControllerMapping
 {
     i16 shotButton;
@@ -30,6 +33,22 @@ enum MusicMode
     MIDI = 2
 };
 
+enum Difficulty
+{
+    EASY,
+    NORMAL,
+    HARD,
+    LUNATIC,
+    EXTRA,
+};
+
+enum EffectQuality
+{
+    MINIMUM,
+    MODERATE,
+    MAXIMUM
+};
+
 struct GameConfigOpts
 {
     u32 useD3dHwTextureBlending : 1;
@@ -47,6 +66,7 @@ struct GameConfigOpts
     u32 redrawHUDEveryFrame : 1;
     u32 preloadMusic : 1;
     u32 disableVsync : 1;
+    u32 dontDetectTextDrawingBackground : 1;
 };
 
 struct GameConfiguration
@@ -75,6 +95,13 @@ struct GameConfiguration
 
 struct Supervisor
 {
+    ZunResult LoadConfig(char *configFile);
+
+    u32 ShouldForceBackbufferClear()
+    {
+        return this->cfg.opts.displayMinimumGraphics | this->cfg.opts.clearBackBufferOnRefresh;
+    }
+
     u32 IsMusicPreloadEnabled()
     {
         return this->cfg.opts.preloadMusic;
@@ -113,7 +140,10 @@ struct Supervisor
     i32 curState;
     i32 wantedState2;
 
-    u8 unk164[0x24];
+    u8 unk164[0x18];
+
+    i32 disableVsync;
+    u8 unk180[0x8];
 
     f32 framerateMultiplier;
     MidiOutput *midiOutput;
