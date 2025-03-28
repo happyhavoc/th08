@@ -43,6 +43,13 @@ Chain::Chain()
 {
 }
 
+void Chain::Release()
+{
+    g_Supervisor.ThreadClose();
+    ReleaseSingleChain(&m_CalcChain);
+    ReleaseSingleChain(&m_DrawChain);
+}
+
 ChainElem *Chain::CreateElem(ChainCallback callback)
 {
     ChainElem *elem = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
