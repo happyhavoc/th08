@@ -50,6 +50,75 @@ void Chain::Cut(ChainElem *to_remove)
     g_Supervisor.LeaveCriticalSectionWrapper(0);
 }
 
+void Chain::CutImpl(ChainElem *to_remove)
+{
+    BOOL isDrawChain;
+    ChainElem *tmp;
+
+    isDrawChain = FALSE;
+
+    if (to_remove == NULL)
+        return;
+
+    tmp = &m_CalcChain;
+
+    while (tmp != NULL)
+    {
+        if (tmp == to_remove)
+            goto destroy_elem;
+
+        tmp = tmp->m_Next;
+    }
+
+    isDrawChain = TRUE;
+
+    tmp = &m_DrawChain;
+    while (tmp != NULL)
+    {
+        if (tmp == to_remove)
+            goto destroy_elem;
+
+        tmp = tmp->m_Next;
+    }
+
+    return;
+
+destroy_elem:
+    if (to_remove->m_Prev != NULL)
+    {
+        to_remove->m_Callback = NULL;
+        to_remove->m_Prev->m_Next = to_remove->m_Next;
+
+        if (to_remove->m_Next != NULL)
+        {
+            to_remove->m_Next->m_Prev = to_remove->m_Prev;
+        }
+
+        to_remove->m_Prev = NULL;
+        to_remove->m_Next = NULL;
+
+        if (to_remove->m_IsHeapAllocated)
+        {
+            g_Supervisor.LeaveCriticalSectionWrapper(0);
+            g_ZunMemory.RemoveFromRegistry(to_remove);
+            delete to_remove;
+            to_remove = NULL;
+            g_Supervisor.EnterCriticalSectionWrapper(0);
+        }
+        else
+        {
+            if (to_remove->m_DeletedCallback != NULL)
+            {
+                ChainLifetimeCallback callback = to_remove->m_DeletedCallback;
+                to_remove->m_DeletedCallback = NULL;
+                g_Supervisor.LeaveCriticalSectionWrapper(0);
+                callback(to_remove->m_Arg);
+                g_Supervisor.EnterCriticalSectionWrapper(0);
+            }
+        }
+    }
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
@@ -60,7 +129,7 @@ LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
     LPBYTE outCursor = out;
 
     if (out == NULL)
@@ -169,7 +238,7 @@ LPBYTE FileSystem::Encrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
     LPBYTE outCursor = out;
 
     if (out == NULL)
