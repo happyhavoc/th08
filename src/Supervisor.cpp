@@ -24,18 +24,18 @@ ZunResult Supervisor::LoadConfig(char *configFile)
     u8 *configFileBuffer;
     i32 fileSize;
 
-    memset(&g_Supervisor.cfg, 0, sizeof(GameConfiguration));
+    memset(&g_Supervisor.m_Cfg, 0, sizeof(GameConfiguration));
     configFileBuffer = FileSystem::OpenFile(configFile, &fileSize, true);
     if (configFileBuffer == NULL)
     {
         g_GameErrorContext.Log(TH_ERR_CONFIG_NOT_FOUND);
     SET_DEFAULT:
-        g_Supervisor.cfg.lifeCount = 2;
-        g_Supervisor.cfg.bombCount = 3;
-        g_Supervisor.cfg.colorMode16bit = 0;
-        g_Supervisor.cfg.version = GAME_VERSION;
-        g_Supervisor.cfg.padXAxis = 600;
-        g_Supervisor.cfg.padYAxis = 600;
+        g_Supervisor.m_Cfg.lifeCount = 2;
+        g_Supervisor.m_Cfg.bombCount = 3;
+        g_Supervisor.m_Cfg.colorMode16bit = 0;
+        g_Supervisor.m_Cfg.version = GAME_VERSION;
+        g_Supervisor.m_Cfg.padXAxis = 600;
+        g_Supervisor.m_Cfg.padYAxis = 600;
         bgmHandle = CreateFileA("./thbgm.dat", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                 FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
         if (bgmHandle != INVALID_HANDLE_VALUE)
@@ -47,27 +47,27 @@ ZunResult Supervisor::LoadConfig(char *configFile)
                 g_GameErrorContext.Fatal(TH_ERR_BGM_VERSION_MISMATCH);
                 return ZUN_ERROR;
             }
-            g_Supervisor.cfg.musicMode = WAV;
+            g_Supervisor.m_Cfg.musicMode = WAV;
         }
         else
         {
-            g_Supervisor.cfg.musicMode = MIDI;
+            g_Supervisor.m_Cfg.musicMode = MIDI;
             utils::GuiDebugPrint(TH_ERR_NO_WAVE_FILE);
         }
-        g_Supervisor.cfg.playSounds = 1;
-        g_Supervisor.cfg.defaultDifficulty = NORMAL;
-        g_Supervisor.cfg.windowed = false;
-        g_Supervisor.cfg.frameskipConfig = false;
-        g_Supervisor.cfg.controllerMapping = g_ControllerMapping;
-        g_Supervisor.cfg.effectQuality = MAXIMUM;
-        g_Supervisor.cfg.slowMode = 0;
-        g_Supervisor.cfg.shotSlow = 0;
-        g_Supervisor.cfg.musicVolume = 100;
-        g_Supervisor.cfg.sfxVolume = 80;
+        g_Supervisor.m_Cfg.playSounds = 1;
+        g_Supervisor.m_Cfg.defaultDifficulty = NORMAL;
+        g_Supervisor.m_Cfg.windowed = false;
+        g_Supervisor.m_Cfg.frameskipConfig = false;
+        g_Supervisor.m_Cfg.controllerMapping = g_ControllerMapping;
+        g_Supervisor.m_Cfg.effectQuality = MAXIMUM;
+        g_Supervisor.m_Cfg.slowMode = 0;
+        g_Supervisor.m_Cfg.shotSlow = 0;
+        g_Supervisor.m_Cfg.musicVolume = 100;
+        g_Supervisor.m_Cfg.sfxVolume = 80;
     }
     else
     {
-        g_Supervisor.cfg = *(GameConfiguration *)configFileBuffer;
+        g_Supervisor.m_Cfg = *(GameConfiguration *)configFileBuffer;
         free(configFileBuffer);
         bgmHandle2 = CreateFileA("./thbgm.dat", GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
                                  FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL);
@@ -81,31 +81,31 @@ ZunResult Supervisor::LoadConfig(char *configFile)
                 return ZUN_ERROR;
             }
         }
-        if (g_Supervisor.cfg.lifeCount >= 7 || g_Supervisor.cfg.bombCount >= 4 ||
-            g_Supervisor.cfg.colorMode16bit >= 2 || g_Supervisor.cfg.musicMode >= 3 ||
-            g_Supervisor.cfg.defaultDifficulty >= 6 || g_Supervisor.cfg.playSounds >= 2 ||
-            g_Supervisor.cfg.windowed >= 2 || g_Supervisor.cfg.frameskipConfig >= 3 ||
-            g_Supervisor.cfg.effectQuality >= 3 || g_Supervisor.cfg.slowMode >= 2 || g_Supervisor.cfg.shotSlow >= 2 ||
-            g_Supervisor.cfg.version != GAME_VERSION || fileSize != 60)
+        if (g_Supervisor.m_Cfg.lifeCount >= 7 || g_Supervisor.m_Cfg.bombCount >= 4 ||
+            g_Supervisor.m_Cfg.colorMode16bit >= 2 || g_Supervisor.m_Cfg.musicMode >= 3 ||
+            g_Supervisor.m_Cfg.defaultDifficulty >= 6 || g_Supervisor.m_Cfg.playSounds >= 2 ||
+            g_Supervisor.m_Cfg.windowed >= 2 || g_Supervisor.m_Cfg.frameskipConfig >= 3 ||
+            g_Supervisor.m_Cfg.effectQuality >= 3 || g_Supervisor.m_Cfg.slowMode >= 2 || g_Supervisor.m_Cfg.shotSlow >= 2 ||
+            g_Supervisor.m_Cfg.version != GAME_VERSION || fileSize != 60)
         {
 
             g_GameErrorContext.Log(TH_ERR_CONFIG_ABNORMAL);
-            memset(&g_Supervisor.cfg, 0, sizeof(GameConfiguration));
+            memset(&g_Supervisor.m_Cfg, 0, sizeof(GameConfiguration));
             goto SET_DEFAULT;
         }
-        g_ControllerMapping = g_Supervisor.cfg.controllerMapping;
+        g_ControllerMapping = g_Supervisor.m_Cfg.controllerMapping;
     }
 
-    g_Supervisor.cfg.opts.useD3dHwTextureBlending = true;
-    if (this->cfg.opts.dontUseVertexBuf != false)
+    g_Supervisor.m_Cfg.opts.useD3dHwTextureBlending = true;
+    if (this->m_Cfg.opts.dontUseVertexBuf != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_VERTEX_BUFFER);
     }
-    if (this->cfg.opts.disableFog != 0)
+    if (this->m_Cfg.opts.disableFog != 0)
     {
         g_GameErrorContext.Log(TH_ERR_NO_FOG);
     }
-    if (this->cfg.opts.force16bitTextures != false)
+    if (this->m_Cfg.opts.force16bitTextures != false)
     {
         g_GameErrorContext.Log(TH_ERR_USE_16BIT_TEXTURES);
     }
@@ -114,56 +114,56 @@ ZunResult Supervisor::LoadConfig(char *configFile)
     {
         g_GameErrorContext.Log(TH_ERR_FORCE_BACKBUFFER_CLEAR);
     }
-    if (this->cfg.opts.displayMinimumGraphics != false)
+    if (this->m_Cfg.opts.displayMinimumGraphics != false)
     {
         g_GameErrorContext.Log(TH_ERR_DONT_RENDER_ITEMS);
     }
-    if (this->cfg.opts.suppressUseOfGoroudShading != false)
+    if (this->m_Cfg.opts.suppressUseOfGoroudShading != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_GOURAUD_SHADING);
     }
-    if (this->cfg.opts.disableDepthTest != false)
+    if (this->m_Cfg.opts.disableDepthTest != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_DEPTH_TESTING);
     }
-    this->disableVsync = false;
-    this->cfg.opts.force60Fps = false;
+    this->m_DisableVsync = false;
+    this->m_Cfg.opts.force60Fps = false;
 
-    if (this->cfg.opts.disableColorCompositing != false)
+    if (this->m_Cfg.opts.disableColorCompositing != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_TEXTURE_COLOR_COMPOSITING);
     }
-    if (this->cfg.windowed != false)
+    if (this->m_Cfg.windowed != false)
     {
         g_GameErrorContext.Log(TH_ERR_LAUNCH_WINDOWED);
     }
-    if (this->cfg.opts.referenceRasterizerMode != false)
+    if (this->m_Cfg.opts.referenceRasterizerMode != false)
     {
         g_GameErrorContext.Log(TH_ERR_FORCE_REFERENCE_RASTERIZER);
     }
-    if (this->cfg.opts.dontUseDirectInput != false)
+    if (this->m_Cfg.opts.dontUseDirectInput != false)
     {
         g_GameErrorContext.Log(TH_ERR_DO_NOT_USE_DIRECTINPUT);
     }
-    if (this->cfg.opts.redrawHUDEveryFrame != false)
+    if (this->m_Cfg.opts.redrawHUDEveryFrame != false)
     {
         g_GameErrorContext.Log(TH_ERR_REDRAW_HUD_EVERY_FRAME);
     }
-    if (this->cfg.opts.preloadMusic != false)
+    if (this->m_Cfg.opts.preloadMusic != false)
     {
         g_GameErrorContext.Log(TH_ERR_PRELOAD_BGM);
     }
-    if (this->cfg.opts.disableVsync != false)
+    if (this->m_Cfg.opts.disableVsync != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_VSYNC);
-        g_Supervisor.disableVsync = true;
+        g_Supervisor.m_DisableVsync = true;
     }
-    if (this->cfg.opts.dontDetectTextDrawingBackground != false)
+    if (this->m_Cfg.opts.dontDetectTextDrawingBackground != false)
     {
         g_GameErrorContext.Log(TH_ERR_DONT_DETECT_TEXT_BG);
     }
 
-    if (FileSystem::WriteDataToFile(configFile, &g_Supervisor.cfg, sizeof(GameConfiguration)) != 0)
+    if (FileSystem::WriteDataToFile(configFile, &g_Supervisor.m_Cfg, sizeof(GameConfiguration)) != 0)
     {
         g_GameErrorContext.Fatal(TH_ERR_FILE_CANNOT_BE_EXPORTED, configFile);
         g_GameErrorContext.Fatal(TH_ERR_FOLDER_HAS_WRITE_PROTECT_OR_DISK_FULL);
@@ -171,6 +171,22 @@ ZunResult Supervisor::LoadConfig(char *configFile)
     }
 
     return ZUN_SUCCESS;
+}
+
+void Supervisor::ThreadClose()
+{
+    if (m_Unk284 != NULL)
+    {
+        utils::GuiDebugPrint("info : Sub Thread Close Request\n");
+        m_Unk28c = TRUE;
+
+        while (WaitForSingleObject(m_Unk284, 1000) == WAIT_TIMEOUT)
+            Sleep(1);
+
+        CloseHandle(m_Unk284);
+        m_Unk284 = NULL;
+        m_Unk28c = FALSE;
+    }
 }
 #pragma optimize("", on)
 }; // namespace th08

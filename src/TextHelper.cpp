@@ -326,7 +326,7 @@ bool TextHelper::CopyTextToSurface(IDirect3DSurface8 *outSurface)
 
 void TextHelper::CreateTextBuffer()
 {
-    g_Supervisor.d3dDevice->CreateImageSurface(1024, TEXT_BUFFER_HEIGHT, D3DFMT_A1R5G5B5, &g_TextBufferSurface);
+    g_Supervisor.m_D3dDevice->CreateImageSurface(1024, TEXT_BUFFER_HEIGHT, D3DFMT_A1R5G5B5, &g_TextBufferSurface);
 }
 
 void TextHelper::ReleaseTextBuffer()

@@ -7,6 +7,7 @@
 #include "Midi.hpp"
 #include "diffbuild.hpp"
 #include "inttypes.hpp"
+#include "utils.hpp"
 
 namespace th08
 {
@@ -96,78 +97,77 @@ struct GameConfiguration
 struct Supervisor
 {
     ZunResult LoadConfig(char *configFile);
+    void ThreadClose();
+
+    u32 IsShotSlowEnabled()
+    {
+        return this->m_Cfg.shotSlow;
+    }
 
     u32 ShouldForceBackbufferClear()
     {
-        return this->cfg.opts.displayMinimumGraphics | this->cfg.opts.clearBackBufferOnRefresh;
+        return this->m_Cfg.opts.displayMinimumGraphics | this->m_Cfg.opts.clearBackBufferOnRefresh;
     }
 
     u32 IsMusicPreloadEnabled()
     {
-        return this->cfg.opts.preloadMusic;
+        return this->m_Cfg.opts.preloadMusic;
     }
 
     void EnterCriticalSectionWrapper(int id)
     {
-        EnterCriticalSection(&criticalSections[id]);
-        criticalSectionLockCounts[id]++;
+        EnterCriticalSection(&m_CriticalSections[id]);
+        m_LockCounts[id]++;
     }
 
     void LeaveCriticalSectionWrapper(int id)
     {
-        LeaveCriticalSection(&criticalSections[id]);
-        criticalSectionLockCounts[id]--;
+        LeaveCriticalSection(&m_CriticalSections[id]);
+        m_LockCounts[id]--;
     }
 
-    HINSTANCE hInstance;
-    PDIRECT3D8 d3dIface;
-    PDIRECT3DDEVICE8 d3dDevice;
-    LPDIRECTINPUTDEVICE8A keyboard;
-    LPDIRECTINPUTDEVICE8A controller;
-    DIDEVCAPS controllerCaps;
+    HINSTANCE m_hInstance;
+    PDIRECT3D8 m_D3dIface;
+    PDIRECT3DDEVICE8 m_D3dDevice;
+    LPDIRECTINPUTDEVICE8A m_Keyboard;
+    LPDIRECTINPUTDEVICE8A m_Controller;
+    DIDEVCAPS m_ControllerCaps;
 
     u8 unk40[0x04];
 
-    HWND hwndGameWindow;
-    D3DXMATRIX viewMatrix;
-    D3DXMATRIX projectionMatrix;
-    D3DVIEWPORT8 viewport;
-    D3DPRESENT_PARAMETERS presentParameters;
-    MidiTimer *midiTimer;
-    GameConfiguration cfg;
-    i32 calcCount;
-    i32 wantedState;
-    i32 curState;
-    i32 wantedState2;
-
-    u8 unk164[0x18];
-
-    i32 disableVsync;
-    u8 unk180[0x8];
-
+    HWND m_HwndGameWindow;
+    D3DXMATRIX m_ViewMatrix;
+    D3DXMATRIX m_ProjectionMatrix;
+    D3DVIEWPORT8 m_Viewport;
+    D3DPRESENT_PARAMETERS m_PresentParameters;
+    MidiTimer *m_MidiTimer;
+    GameConfiguration m_Cfg;
+    i32 m_CalcCount;
+    i32 m_WantedState;
+    i32 m_CurState;
+    i32 m_WantedState2;
+    unknown_fields(0x164, 0x10);
+    u32 unk174;
+    unknown_fields(0x178, 0x4);
+    BOOL m_DisableVsync;
+    unknown_fields(0x180, 0x8);
     f32 framerateMultiplier;
     MidiOutput *midiOutput;
-
-    u8 unk190[0x14];
-
-    u32 flags;
-    DWORD totalPlayTime;
-    DWORD systemTime;
-    D3DCAPS8 d3dCaps;
-    HANDLE unk284;
-
-    u8 unk288[0x04];
-
-    DWORD unk28c;
-    DWORD unk290;
-
-    u8 unk294[0x04];
-
-    CRITICAL_SECTION criticalSections[4];
-    u8 criticalSectionLockCounts[4];
+    unknown_fields(0x190, 0x14);
+    u32 m_Flags;
+    DWORD m_TotalPlayTime;
+    DWORD m_SystemTime;
+    D3DCAPS8 m_D3dCaps;
+    HANDLE m_Unk284;
+    unknown_fields(0x288, 0x4);
+    BOOL m_Unk28c;
+    DWORD m_Unk290;
+    unknown_fields(0x294, 0x4);
+    CRITICAL_SECTION m_CriticalSections[4];
+    u8 m_LockCounts[4];
     DWORD unk2fc;
 
-    u8 unk300[0x64];
+    unknown_fields(0x300, 0x64);
 };
 C_ASSERT(sizeof(Supervisor) == 0x364);
 

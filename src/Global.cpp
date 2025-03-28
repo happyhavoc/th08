@@ -3,14 +3,795 @@
 #include "utils.hpp"
 #include <limits.h>
 #include <stdio.h>
+#include "i18n.hpp"
 
 namespace th08
 {
-DIFFABLE_STATIC(Rng, g_Rng);
-DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext);
-DIFFABLE_STATIC(PbgArchive, g_PbgArchive);
-DIFFABLE_STATIC(ZunMemory, g_ZunMemory);
+DIFFABLE_STATIC(Rng, g_Rng)
+DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext)
+DIFFABLE_STATIC(PbgArchive, g_PbgArchive)
+DIFFABLE_STATIC(ZunMemory, g_ZunMemory)
+DIFFABLE_STATIC(JOYCAPSA, g_JoystickCaps)
+DIFFABLE_STATIC(u16, g_FocusButtonConflictState)
+
+Chain::~Chain()
+{
+}
+
+ChainElem::ChainElem()
+{
+    m_Prev = NULL;
+    m_Next = NULL;
+    m_Callback = NULL;
+    m_UnkPtr = this;
+    m_AddedCallback = NULL;
+    m_DeletedCallback = NULL;
+    m_Priority = 0;
+    m_IsHeapAllocated = false;
+}
+
+ChainElem::~ChainElem()
+{
+    if (m_DeletedCallback != NULL)
+        m_DeletedCallback(m_Arg);
+
+    m_Prev = NULL;
+    m_Next = NULL;
+    m_Callback = NULL;
+    m_AddedCallback = NULL;
+    m_DeletedCallback = NULL;
+}
+
+Chain::Chain()
+{
+}
+
+#pragma var_order(cur, res)
+int Chain::AddToCalcChain(ChainElem *elem, int priority)
+{
+    ChainElem *cur = &m_CalcChain;
+    int res = 0;
+
+    if (elem->m_AddedCallback != NULL)
+    {
+        res = elem->m_AddedCallback(elem->m_Arg);
+        elem->m_AddedCallback = NULL;
+    }
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+    elem->m_Priority = priority;
+
+    while (cur->m_Next != NULL)
+    {
+        if (cur->m_Priority > priority)
+            break;
+        cur = cur->m_Next;
+    }
+
+    if (cur->m_Priority > priority)
+    {
+        elem->m_Next = cur;
+        elem->m_Prev = cur->m_Prev;
+
+        if (elem->m_Prev != NULL)
+            elem->m_Prev->m_Next = elem;
+
+        cur->m_Prev = elem;
+    }
+    else
+    {
+        elem->m_Next = NULL;
+        elem->m_Prev = cur;
+        cur->m_Next = elem;
+    }
+
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+
+    return res;
+}
+
+#pragma var_order(cur, res)
+int Chain::AddToDrawChain(ChainElem *elem, int priority)
+{
+    ChainElem *cur = &m_DrawChain;
+    int res = 0;
+
+    if (elem->m_AddedCallback != NULL)
+    {
+        res = elem->m_AddedCallback(elem->m_Arg);
+        elem->m_AddedCallback = NULL;
+    }
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+    elem->m_Priority = priority;
+
+    while (cur->m_Next != NULL)
+    {
+        if (cur->m_Priority > priority)
+            break;
+        cur = cur->m_Next;
+    }
+
+    if (cur->m_Priority > priority)
+    {
+        elem->m_Next = cur;
+        elem->m_Prev = cur->m_Prev;
+
+        if (elem->m_Prev != NULL)
+            elem->m_Prev->m_Next = elem;
+
+        cur->m_Prev = elem;
+    }
+    else
+    {
+        elem->m_Next = NULL;
+        elem->m_Prev = cur;
+        cur->m_Next = elem;
+    }
+
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+
+    return res;
+}
+
+#pragma var_order(current, updatedCount, result, tmp1)
+int Chain::RunCalcChain()
+{
+    ChainElem *tmp1;
+    ChainElem *current;
+    int updatedCount;
+    ChainCallbackResult result;
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+
+restart_from_first_job:
+    updatedCount = 0;
+    current = &m_CalcChain;
+
+    while (current != NULL)
+    {
+        if (current->m_Callback != NULL)
+        {
+        execute_again:
+            g_Supervisor.LeaveCriticalSectionWrapper(0);
+            result = current->m_Callback(current->m_Arg);
+            g_Supervisor.EnterCriticalSectionWrapper(0);
+
+            switch (result)
+            {
+            case CHAIN_CALLBACK_RESULT_CONTINUE_AND_REMOVE_JOB:
+                tmp1 = current;
+                current = current->m_Next;
+                Cut(tmp1);
+
+                updatedCount++;
+                continue;
+
+            case CHAIN_CALLBACK_RESULT_EXECUTE_AGAIN:
+                goto execute_again;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_SUCCESS:
+                updatedCount = 0;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_BREAK:
+                updatedCount = 1;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_ERROR:
+                updatedCount = -1;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_RESTART_FROM_FIRST_JOB:
+                goto restart_from_first_job;
+
+            default:
+                break;
+            }
+
+            updatedCount++;
+        }
+
+        current = current->m_Next;
+    }
+
+loop_exit:
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+    return updatedCount;
+}
+
+void Chain::ReleaseSingleChain(ChainElem *root)
+{
+    // NOTE: Those names are like this to get perfect stack frame matching
+    // TODO: Give meaningfull names that still match.
+    ChainElem a0;
+    ChainElem *current;
+    ChainElem *tmp;
+    ChainElem *wasNext;
+
+    tmp = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+    a0.m_Next = tmp;
+
+    current = root;
+    while (current != NULL)
+    {
+        tmp->m_UnkPtr = current;
+        tmp->m_Next = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+        tmp = tmp->m_Next;
+        current = current->m_Next;
+    }
+
+    current = &a0;
+    while (current != NULL)
+    {
+        Cut(current->m_UnkPtr);
+        current = current->m_Next;
+    }
+
+    tmp = a0.m_Next;
+
+    while (tmp != NULL)
+    {
+        wasNext = tmp->m_Next;
+        g_ZunMemory.RemoveFromRegistry(tmp);
+        delete tmp;
+        tmp = NULL;
+        tmp = wasNext;
+    }
+}
+
+#pragma var_order(current, updatedCount, result, tmp1)
+int Chain::RunDrawChain()
+{
+    ChainElem *tmp1;
+    ChainElem *current;
+    int updatedCount;
+    ChainCallbackResult result;
+
+    updatedCount = 0;
+    current = &m_DrawChain;
+
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+
+    while (current != NULL)
+    {
+        if (current->m_Callback != NULL)
+        {
+        execute_again:
+            g_Supervisor.LeaveCriticalSectionWrapper(0);
+            result = current->m_Callback(current->m_Arg);
+            g_Supervisor.EnterCriticalSectionWrapper(0);
+
+            switch (result)
+            {
+            case CHAIN_CALLBACK_RESULT_CONTINUE_AND_REMOVE_JOB:
+                tmp1 = current;
+                current = current->m_Next;
+                Cut(tmp1);
+
+                updatedCount++;
+                continue;
+
+            case CHAIN_CALLBACK_RESULT_EXECUTE_AGAIN:
+                goto execute_again;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_SUCCESS:
+                updatedCount = 0;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_BREAK:
+                updatedCount = 1;
+                goto loop_exit;
+
+            case CHAIN_CALLBACK_RESULT_EXIT_GAME_ERROR:
+                updatedCount = -1;
+                goto loop_exit;
+
+            default:
+                break;
+            }
+
+            updatedCount++;
+        }
+
+        current = current->m_Next;
+    }
+
+loop_exit:
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+    return updatedCount;
+}
+
+void Chain::Release()
+{
+    g_Supervisor.ThreadClose();
+    ReleaseSingleChain(&m_CalcChain);
+    ReleaseSingleChain(&m_DrawChain);
+}
+
+ChainElem *Chain::CreateElem(ChainCallback callback)
+{
+    ChainElem *elem = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+
+    elem->SetCallback(callback);
+    elem->m_IsHeapAllocated = true;
+
+    return elem;
+}
+
+void Chain::Cut(ChainElem *to_remove)
+{
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+    CutImpl(to_remove);
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+}
+
+void Chain::CutImpl(ChainElem *to_remove)
+{
+    BOOL isDrawChain;
+    ChainElem *tmp;
+
+    isDrawChain = FALSE;
+
+    if (to_remove == NULL)
+        return;
+
+    tmp = &m_CalcChain;
+
+    while (tmp != NULL)
+    {
+        if (tmp == to_remove)
+            goto destroy_elem;
+
+        tmp = tmp->m_Next;
+    }
+
+    isDrawChain = TRUE;
+
+    tmp = &m_DrawChain;
+    while (tmp != NULL)
+    {
+        if (tmp == to_remove)
+            goto destroy_elem;
+
+        tmp = tmp->m_Next;
+    }
+
+    return;
+
+destroy_elem:
+    if (to_remove->m_Prev != NULL)
+    {
+        to_remove->m_Callback = NULL;
+        to_remove->m_Prev->m_Next = to_remove->m_Next;
+
+        if (to_remove->m_Next != NULL)
+        {
+            to_remove->m_Next->m_Prev = to_remove->m_Prev;
+        }
+
+        to_remove->m_Prev = NULL;
+        to_remove->m_Next = NULL;
+
+        if (to_remove->m_IsHeapAllocated)
+        {
+            g_Supervisor.LeaveCriticalSectionWrapper(0);
+            g_ZunMemory.RemoveFromRegistry(to_remove);
+            delete to_remove;
+            to_remove = NULL;
+            g_Supervisor.EnterCriticalSectionWrapper(0);
+        }
+        else
+        {
+            if (to_remove->m_DeletedCallback != NULL)
+            {
+                ChainLifetimeCallback callback = to_remove->m_DeletedCallback;
+                to_remove->m_DeletedCallback = NULL;
+                g_Supervisor.LeaveCriticalSectionWrapper(0);
+                callback(to_remove->m_Arg);
+                g_Supervisor.EnterCriticalSectionWrapper(0);
+            }
+        }
+    }
+}
+
 DIFFABLE_STATIC_ASSIGN(ControllerMapping, g_ControllerMapping) = {0, 1, 2, 4, -1, -1, -1, -1, 3};
+
+u16 Controller::GetJoystickCaps(void)
+{
+    JOYINFOEX pji;
+
+    pji.dwSize = sizeof(JOYINFOEX);
+    pji.dwFlags = JOY_RETURNALL;
+
+    if (joyGetPosEx(0, &pji) != MMSYSERR_NOERROR)
+    {
+        g_GameErrorContext.Log(TH_ERR_NO_PAD_FOUND);
+        return 1;
+    }
+
+    joyGetDevCapsA(0, &g_JoystickCaps, sizeof(g_JoystickCaps));
+    return 0;
+}
+
+#define JOYSTICK_MIDPOINT(min, max) ((min + max) / 2)
+#define JOYSTICK_BUTTON_PRESSED(button, x, y) (x > y ? button : 0)
+#define JOYSTICK_BUTTON_PRESSED_INVERT(button, x, y) (x < y ? button : 0)
+#define KEYBOARD_KEY_PRESSED(button, x) keyboardState[x] & 0x80 ? button : 0
+#define KEYBOARD_KEY_PRESSED2(button, x) keyboardState[x] & 0x800 ? button : 0
+
+u16 Controller::GetControllerInput(u16 buttons)
+{
+    // NOTE: Those names are like this to get perfect stack frame matching
+    // TODO: Give meaningfull names that still match.
+    JOYINFOEX aa;
+    u32 ab;
+    u32 ac;
+    DIJOYSTATE2 a0;
+    u32 a2;
+    HRESULT aaa;
+
+    if (g_Supervisor.m_Controller == NULL)
+    {
+        memset(&aa, 0, sizeof(aa));
+        aa.dwSize = sizeof(JOYINFOEX);
+        aa.dwFlags = JOY_RETURNALL;
+
+        if (joyGetPosEx(0, &aa) != MMSYSERR_NOERROR)
+        {
+            return buttons;
+        }
+
+        ac = SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.shotButton, TH_BUTTON_SHOOT,
+                                           aa.dwButtons);
+
+        if (g_Supervisor.IsShotSlowEnabled())
+        {
+            if (ac != 0)
+            {
+                if (g_FocusButtonConflictState < 20)
+                {
+                    g_FocusButtonConflictState++;
+                }
+
+                if (g_FocusButtonConflictState >= 10)
+                {
+                    buttons |= TH_BUTTON_FOCUS;
+                }
+            }
+            else
+            {
+                if (g_FocusButtonConflictState > 10)
+                {
+                    g_FocusButtonConflictState -= 10;
+                    buttons |= TH_BUTTON_FOCUS;
+                }
+                else
+                {
+                    g_FocusButtonConflictState = 0;
+                }
+            }
+        }
+
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_BOMB,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_FOCUS,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.menuButton, TH_BUTTON_MENU,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.upButton, TH_BUTTON_UP,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.downButton, TH_BUTTON_DOWN,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.leftButton, TH_BUTTON_LEFT,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.rightButton, TH_BUTTON_RIGHT,
+                                      aa.dwButtons);
+        SetButtonFromControllerInputs(&buttons, g_Supervisor.m_Cfg.controllerMapping.skipButton, TH_BUTTON_SKIP,
+                                      aa.dwButtons);
+
+        ab = ((g_JoystickCaps.wXmax - g_JoystickCaps.wXmin) / 2 / 2);
+
+        buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_RIGHT, aa.dwXpos,
+                                           JOYSTICK_MIDPOINT(g_JoystickCaps.wXmin, g_JoystickCaps.wXmax) + ab);
+        buttons |= JOYSTICK_BUTTON_PRESSED(
+            TH_BUTTON_LEFT, JOYSTICK_MIDPOINT(g_JoystickCaps.wXmin, g_JoystickCaps.wXmax) - ab, aa.dwXpos);
+
+        ab = ((g_JoystickCaps.wYmax - g_JoystickCaps.wYmin) / 2 / 2);
+        buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_DOWN, aa.dwYpos,
+                                           JOYSTICK_MIDPOINT(g_JoystickCaps.wYmin, g_JoystickCaps.wYmax) + ab);
+        buttons |= JOYSTICK_BUTTON_PRESSED(
+            TH_BUTTON_UP, JOYSTICK_MIDPOINT(g_JoystickCaps.wYmin, g_JoystickCaps.wYmax) - ab, aa.dwYpos);
+
+        return buttons;
+    }
+    else
+    {
+        // FIXME: Next if not matching.
+        aaa = g_Supervisor.m_Controller->Poll();
+        if (FAILED(aaa))
+        {
+            i32 retryCount = 0;
+
+            utils::DebugPrint("error : DIERR_INPUTLOST\n");
+            aaa = g_Supervisor.m_Controller->Acquire();
+
+            while (aaa == DIERR_INPUTLOST)
+            {
+                aaa = g_Supervisor.m_Controller->Acquire();
+                utils::DebugPrint("error : DIERR_INPUTLOST %d\n", retryCount);
+
+                retryCount++;
+
+                if (retryCount >= 400)
+                {
+                    return buttons;
+                }
+            }
+
+            return buttons;
+        }
+        else
+        {
+            memset(&a0, 0, sizeof(a0));
+
+            aaa = g_Supervisor.m_Controller->GetDeviceState(sizeof(a0), &a0);
+
+            if (FAILED(aaa))
+            {
+                return buttons;
+            }
+
+            a2 = SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.shotButton,
+                                                  TH_BUTTON_SHOOT, a0.rgbButtons);
+
+            if (g_Supervisor.IsShotSlowEnabled())
+            {
+                if (a2 != 0)
+                {
+                    if (g_FocusButtonConflictState < 20)
+                    {
+                        g_FocusButtonConflictState++;
+                    }
+
+                    if (g_FocusButtonConflictState >= 10)
+                    {
+                        buttons |= TH_BUTTON_FOCUS;
+                    }
+                }
+                else
+                {
+                    if (g_FocusButtonConflictState > 10)
+                    {
+                        g_FocusButtonConflictState -= 10;
+                        buttons |= 0x4;
+                    }
+                    else
+                    {
+                        g_FocusButtonConflictState = 0;
+                    }
+                }
+            }
+
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_BOMB,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.bombButton, TH_BUTTON_FOCUS,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.menuButton, TH_BUTTON_MENU,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.upButton, TH_BUTTON_UP,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.downButton, TH_BUTTON_DOWN,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.leftButton, TH_BUTTON_LEFT,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.rightButton, TH_BUTTON_RIGHT,
+                                             a0.rgbButtons);
+            SetButtonFromDirectInputJoystate(&buttons, g_Supervisor.m_Cfg.controllerMapping.skipButton, TH_BUTTON_SKIP,
+                                             a0.rgbButtons);
+
+            buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_RIGHT, a0.lX, g_Supervisor.m_Cfg.padXAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED_INVERT(TH_BUTTON_LEFT, a0.lX, -g_Supervisor.m_Cfg.padXAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED(TH_BUTTON_DOWN, a0.lY, g_Supervisor.m_Cfg.padYAxis);
+            buttons |= JOYSTICK_BUTTON_PRESSED_INVERT(TH_BUTTON_UP, a0.lY, -g_Supervisor.m_Cfg.padYAxis);
+        }
+    }
+
+    return buttons;
+}
+
+u32 Controller::SetButtonFromDirectInputJoystate(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
+                                                 u8 *inputButtons)
+{
+    if (controllerButtonToTest < 0)
+    {
+        return 0;
+    }
+
+    *outButtons |= (inputButtons[controllerButtonToTest] & 0x80 ? touhouButton : 0);
+
+    return inputButtons[controllerButtonToTest] & 0x80 ? touhouButton : 0;
+}
+
+u32 Controller::SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest, u16 touhouButton,
+                                              u32 inputButtons)
+{
+    DWORD mask;
+
+    if (controllerButtonToTest < 0)
+    {
+        return 0;
+    }
+
+    mask = 1 << controllerButtonToTest;
+
+    *outButtons |= (inputButtons & mask ? touhouButton : 0);
+
+    return inputButtons & mask ? touhouButton : 0;
+}
+
+DIFFABLE_STATIC_ARRAY(u8, (32 * 4), g_ControllerData)
+
+#pragma var_order(joyinfoex, joyButtonBit, joyButtonIndex, dires, dijoystate2, diRetryCount)
+// This is for rebinding keys
+u8 *Controller::GetControllerState()
+{
+    JOYINFOEX joyinfoex;
+    u32 joyButtonBit;
+    u32 joyButtonIndex;
+
+    i32 dires;
+    DIJOYSTATE2 dijoystate2;
+    i32 diRetryCount;
+
+    memset(&g_ControllerData, 0, sizeof(g_ControllerData));
+    if (g_Supervisor.m_Controller == NULL)
+    {
+        memset(&joyinfoex, 0, sizeof(JOYINFOEX));
+        joyinfoex.dwSize = sizeof(JOYINFOEX);
+        joyinfoex.dwFlags = JOY_RETURNALL;
+        if (joyGetPosEx(0, &joyinfoex) != JOYERR_NOERROR)
+        {
+            return g_ControllerData;
+        }
+        for (joyButtonBit = joyinfoex.dwButtons, joyButtonIndex = 0; joyButtonIndex < 32;
+             joyButtonIndex += 1, joyButtonBit >>= 1)
+        {
+            if ((joyButtonBit & 1) != 0)
+            {
+                g_ControllerData[joyButtonIndex] = 0x80;
+            }
+        }
+        return g_ControllerData;
+    }
+    else
+    {
+        dires = g_Supervisor.m_Controller->Poll();
+        if (FAILED(dires))
+        {
+            diRetryCount = 0;
+            utils::DebugPrint("error : DIERR_INPUTLOST\n");
+            dires = g_Supervisor.m_Controller->Acquire();
+            while (dires == DIERR_INPUTLOST)
+            {
+                dires = g_Supervisor.m_Controller->Acquire();
+                diRetryCount++;
+                if (diRetryCount >= 400)
+                {
+                    utils::DebugPrint("error : DIERR_INPUTLOST %d\n", diRetryCount);
+                    return g_ControllerData;
+                }
+            }
+            return g_ControllerData;
+        }
+        /* dires = */ g_Supervisor.m_Controller->GetDeviceState(sizeof(DIJOYSTATE2), &dijoystate2);
+        // TODO: seems ZUN forgot "dires =" above
+        if (FAILED(dires))
+        {
+            return g_ControllerData;
+        }
+        memcpy(&g_ControllerData, dijoystate2.rgbButtons, sizeof(dijoystate2.rgbButtons));
+        return g_ControllerData;
+    }
+}
+
+u16 Controller::GetInput(void)
+{
+    u8 keyboardState[256];
+    u16 buttons;
+
+    buttons = 0;
+
+    if (g_Supervisor.m_Keyboard == NULL)
+    {
+        GetKeyboardState(keyboardState);
+
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, VK_UP);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, VK_DOWN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, VK_LEFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, VK_RIGHT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, VK_NUMPAD8);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, VK_NUMPAD2);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, VK_NUMPAD4);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, VK_NUMPAD6);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_LEFT, VK_NUMPAD7);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_RIGHT, VK_NUMPAD9);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_LEFT, VK_NUMPAD1);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_RIGHT, VK_NUMPAD3);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, VK_HOME);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, 'P');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_D, 'D');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SHOOT, 'Z');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_BOMB, 'X');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, VK_SHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_MENU, VK_ESCAPE);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, VK_CONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_Q, 'Q');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_S, 'S');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RESET, 'R');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_ENTER, VK_RETURN);
+    }
+    else
+    {
+        HRESULT res = g_Supervisor.m_Keyboard->GetDeviceState(sizeof(keyboardState), keyboardState);
+
+        buttons = 0;
+
+        if (res == DIERR_INPUTLOST)
+        {
+            g_Supervisor.m_Keyboard->Acquire();
+
+            return Controller::GetControllerInput(buttons);
+        }
+        if (res != S_OK)
+        {
+            g_Supervisor.m_Keyboard->Acquire();
+
+            return Controller::GetControllerInput(buttons);
+        }
+
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, DIK_UP);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, DIK_DOWN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, DIK_LEFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, DIK_RIGHT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, DIK_NUMPAD8);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, DIK_NUMPAD2);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, DIK_NUMPAD4);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, DIK_NUMPAD6);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_LEFT, DIK_NUMPAD7);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_RIGHT, DIK_NUMPAD9);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_LEFT, DIK_NUMPAD1);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_RIGHT, DIK_NUMPAD3);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, DIK_HOME);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, DIK_P);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_D, DIK_D);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SHOOT, DIK_Z);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_BOMB, DIK_X);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, DIK_LSHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, DIK_RSHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_MENU, DIK_ESCAPE);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, DIK_LCONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, DIK_RCONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_Q, DIK_Q);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_S, DIK_S);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_ENTER, DIK_RETURN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RESET, DIK_R);
+    }
+
+    return Controller::GetControllerInput(buttons);
+}
+
+void Controller::ResetKeyboard(void)
+{
+    u8 key_states[256];
+
+    GetKeyboardState(key_states);
+    for (i32 idx = 0; idx < 256; idx++)
+    {
+        *(key_states + idx) &= 0x7f;
+    }
+    SetKeyboardState(key_states);
+}
 
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
@@ -22,7 +803,7 @@ LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
     LPBYTE outCursor = out;
 
     if (out == NULL)
@@ -131,7 +912,7 @@ LPBYTE FileSystem::Encrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc,
     i32 numUnencrypted = (size % chunkSize < chunkSize / 4) ? size % chunkSize : 0;
 
     LPBYTE inCursor = inData;
-    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size);
+    LPBYTE out = (LPBYTE)g_ZunMemory.Alloc(size, "d:\\cygwin\\home\\zun\\prog\\th08\\global.h");
     LPBYTE outCursor = out;
 
     if (out == NULL)

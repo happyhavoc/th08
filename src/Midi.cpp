@@ -38,7 +38,7 @@ BOOL MidiDevice::OpenDevice(UINT uDeviceId)
 
     m_DeviceId = uDeviceId;
 
-    return midiOutOpen(&handle, uDeviceId, (DWORD_PTR)g_Supervisor.hwndGameWindow, NULL, CALLBACK_WINDOW) !=
+    return midiOutOpen(&handle, uDeviceId, (DWORD_PTR)g_Supervisor.m_HwndGameWindow, NULL, CALLBACK_WINDOW) !=
            MMSYSERR_NOERROR;
 }
 
