@@ -416,6 +416,7 @@ u16 Controller::GetJoystickCaps(void)
 #define JOYSTICK_BUTTON_PRESSED(button, x, y) (x > y ? button : 0)
 #define JOYSTICK_BUTTON_PRESSED_INVERT(button, x, y) (x < y ? button : 0)
 #define KEYBOARD_KEY_PRESSED(button, x) keyboardState[x] & 0x80 ? button : 0
+#define KEYBOARD_KEY_PRESSED2(button, x) keyboardState[x] & 0x800 ? button : 0
 
 u16 Controller::GetControllerInput(u16 buttons)
 {
@@ -690,6 +691,92 @@ u8 *Controller::GetControllerState()
         memcpy(&g_ControllerData, dijoystate2.rgbButtons, sizeof(dijoystate2.rgbButtons));
         return g_ControllerData;
     }
+}
+
+u16 Controller::GetInput(void)
+{
+    u8 keyboardState[256];
+    u16 buttons;
+
+    buttons = 0;
+
+    if (g_Supervisor.m_Keyboard == NULL)
+    {
+        GetKeyboardState(keyboardState);
+
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, VK_UP);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, VK_DOWN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, VK_LEFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, VK_RIGHT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, VK_NUMPAD8);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, VK_NUMPAD2);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, VK_NUMPAD4);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, VK_NUMPAD6);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_LEFT, VK_NUMPAD7);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_RIGHT, VK_NUMPAD9);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_LEFT, VK_NUMPAD1);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_RIGHT, VK_NUMPAD3);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, VK_HOME);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, 'P');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_D, 'D');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SHOOT, 'Z');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_BOMB, 'X');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, VK_SHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_MENU, VK_ESCAPE);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, VK_CONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_Q, 'Q');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_S, 'S');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RESET, 'R');
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_ENTER, VK_RETURN);
+    }
+    else
+    {
+        HRESULT res = g_Supervisor.m_Keyboard->GetDeviceState(sizeof(keyboardState), keyboardState);
+
+        buttons = 0;
+
+        if (res == DIERR_INPUTLOST)
+        {
+            g_Supervisor.m_Keyboard->Acquire();
+
+            return Controller::GetControllerInput(buttons);
+        }
+        if (res != S_OK)
+        {
+            g_Supervisor.m_Keyboard->Acquire();
+
+            return Controller::GetControllerInput(buttons);
+        }
+
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, DIK_UP);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, DIK_DOWN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, DIK_LEFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, DIK_RIGHT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP, DIK_NUMPAD8);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN, DIK_NUMPAD2);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_LEFT, DIK_NUMPAD4);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RIGHT, DIK_NUMPAD6);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_LEFT, DIK_NUMPAD7);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_UP_RIGHT, DIK_NUMPAD9);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_LEFT, DIK_NUMPAD1);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_DOWN_RIGHT, DIK_NUMPAD3);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, DIK_HOME);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_HOME, DIK_P);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_D, DIK_D);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SHOOT, DIK_Z);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_BOMB, DIK_X);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, DIK_LSHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_FOCUS, DIK_RSHIFT);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_MENU, DIK_ESCAPE);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, DIK_LCONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_SKIP, DIK_RCONTROL);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_Q, DIK_Q);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_S, DIK_S);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_ENTER, DIK_RETURN);
+        buttons |= KEYBOARD_KEY_PRESSED(TH_BUTTON_RESET, DIK_R);
+    }
+
+    return Controller::GetControllerInput(buttons);
 }
 
 void Controller::ResetKeyboard(void)
