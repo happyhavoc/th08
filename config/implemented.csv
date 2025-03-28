@@ -1,4 +1,7 @@
 th08::utils::DebugPrint
+th08::Chain::~Chain
+th08::ChainElem::ChainElem
+th08::ChainElem::~ChainElem
 th08::FileSystem::Decrypt
 th08::FileSystem::TryDecryptFromTable
 th08::FileSystem::Encrypt
