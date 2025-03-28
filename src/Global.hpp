@@ -22,9 +22,10 @@ enum ChainCallbackResult
 typedef ChainCallbackResult (*ChainCallback)(void *);
 typedef ZunResult (*ChainLifetimeCallback)(void *);
 
+// TODO: rename to funcChainInf
 class ChainElem
 {
-public:
+  public:
     ChainElem();
     ~ChainElem();
 
@@ -46,17 +47,16 @@ public:
     void *m_Arg;
 };
 
-// TODO: rename to funcChainInf
 class Chain
 {
-private:
+  private:
     ChainElem m_CalcChain;
     ChainElem m_DrawChain;
 
     void ReleaseSingleChain(ChainElem *root);
     void CutImpl(ChainElem *to_remove);
 
-public:
+  public:
     Chain();
     ~Chain();
 

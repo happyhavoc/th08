@@ -24,7 +24,7 @@ ChainElem::ChainElem()
     m_AddedCallback = NULL;
     m_DeletedCallback = NULL;
     m_Priority = 0;
-    m_IsHeapAllocated = 0;
+    m_IsHeapAllocated = false;
 }
 
 ChainElem::~ChainElem()
@@ -41,6 +41,16 @@ ChainElem::~ChainElem()
 
 Chain::Chain()
 {
+}
+
+ChainElem *Chain::CreateElem(ChainCallback callback)
+{
+    ChainElem *elem = (ChainElem *)g_ZunMemory.AddToRegistry(new ChainElem(), sizeof(ChainElem), "funcChainInf");
+
+    elem->SetCallback(callback);
+    elem->m_IsHeapAllocated = true;
+
+    return elem;
 }
 
 void Chain::Cut(ChainElem *to_remove)
