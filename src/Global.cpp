@@ -43,6 +43,13 @@ Chain::Chain()
 {
 }
 
+void Chain::Cut(ChainElem *to_remove)
+{
+    g_Supervisor.EnterCriticalSectionWrapper(0);
+    CutImpl(to_remove);
+    g_Supervisor.LeaveCriticalSectionWrapper(0);
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
