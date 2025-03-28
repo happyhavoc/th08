@@ -70,6 +70,25 @@ class Chain
     ChainElem *CreateElem(ChainCallback callback);
 };
 
+enum TouhouButton
+{
+};
+
+namespace Controller
+{
+u16 GetJoystickCaps();
+u32 SetButtonFromControllerInputs(u16 *outButtons, i16 controllerButtonToTest, enum TouhouButton touhouButton,
+                                  u32 inputButtons);
+
+unsigned int SetButtonFromDirectInputJoystate(u16 *outButtons, i16 controllerButtonToTest,
+                                              enum TouhouButton touhouButton, u8 *inputButtons);
+
+u16 GetControllerInput(u16 buttons);
+u8 *GetControllerState();
+u16 GetInput();
+void ResetKeyboard();
+}; // namespace Controller
+
 namespace FileSystem
 {
 LPBYTE Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes);
