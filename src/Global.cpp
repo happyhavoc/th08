@@ -395,6 +395,8 @@ destroy_elem:
     }
 }
 
+DIFFABLE_STATIC_ASSIGN(ControllerMapping, g_ControllerMapping) = {0, 1, 2, 4, -1, -1, -1, -1, 3};
+
 u16 Controller::GetJoystickCaps(void)
 {
     JOYINFOEX pji;

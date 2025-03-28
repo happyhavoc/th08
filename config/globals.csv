@@ -1,6 +1,7 @@
 _g_PbgFileSeekModes,        0x004b98f8
 _g_PbgFileOpenModes,        0x004c8704
 _g_AsciiManager,            0x004cce20
+_g_ControllerMapping,       0x004c78c8
 _g_DecryptParams,           0x004c78e0
 _g_CryptSignature,          0x004c7940
 _g_FormatInfoArray,         0x004c7948

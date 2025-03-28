@@ -11,6 +11,9 @@
 
 namespace th08
 {
+#define GAME_VERSION 0x80001
+#define ZWAV_MAGIC 'VAWZ'
+
 struct ControllerMapping
 {
     i16 shotButton;
@@ -31,6 +34,22 @@ enum MusicMode
     MIDI = 2
 };
 
+enum Difficulty
+{
+    EASY,
+    NORMAL,
+    HARD,
+    LUNATIC,
+    EXTRA,
+};
+
+enum EffectQuality
+{
+    MINIMUM,
+    MODERATE,
+    MAXIMUM
+};
+
 struct GameConfigOpts
 {
     u32 useD3dHwTextureBlending : 1;
@@ -48,6 +67,7 @@ struct GameConfigOpts
     u32 redrawHUDEveryFrame : 1;
     u32 preloadMusic : 1;
     u32 disableVsync : 1;
+    u32 dontDetectTextDrawingBackground : 1;
 };
 
 struct GameConfiguration
@@ -76,11 +96,17 @@ struct GameConfiguration
 
 struct Supervisor
 {
+    ZunResult LoadConfig(char *configFile);
     void ThreadClose();
 
     u32 IsShotSlowEnabled()
     {
         return this->m_Cfg.shotSlow;
+    }
+
+    u32 ShouldForceBackbufferClear()
+    {
+        return this->m_Cfg.opts.displayMinimumGraphics | this->m_Cfg.opts.clearBackBufferOnRefresh;
     }
 
     u32 IsMusicPreloadEnabled()
@@ -123,7 +149,7 @@ struct Supervisor
     unknown_fields(0x164, 0x10);
     u32 unk174;
     unknown_fields(0x178, 0x4);
-    BOOL m_DisableVSync;
+    BOOL m_DisableVsync;
     unknown_fields(0x180, 0x8);
     f32 framerateMultiplier;
     MidiOutput *midiOutput;
@@ -145,6 +171,5 @@ struct Supervisor
 };
 C_ASSERT(sizeof(Supervisor) == 0x364);
 
-DIFFABLE_EXTERN(ControllerMapping, g_ControllerMapping)
 DIFFABLE_EXTERN(Supervisor, g_Supervisor);
 }; // namespace th08

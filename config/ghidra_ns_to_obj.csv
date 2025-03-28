@@ -7,5 +7,6 @@ PbgFile,th08::IPbgFile,th08::CPbgFile
 SoundPlayer,th08::SoundPlayer
 Supervisor,th08::Supervisor
 TextHelper,th08::TextHelper
+Supervisor,th08::Supervisor
 utils,th08::utils
 zwave,th08::CSoundManager,th08::CSound,th08::CStreamingSound,th08::CWaveFile
