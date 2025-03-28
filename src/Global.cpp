@@ -442,6 +442,71 @@ u32 Controller::SetButtonFromControllerInputs(u16 *outButtons, i16 controllerBut
     return inputButtons & mask ? touhouButton : 0;
 }
 
+DIFFABLE_STATIC_ARRAY(u8, (32 * 4), g_ControllerData)
+
+#pragma var_order(joyinfoex, joyButtonBit, joyButtonIndex, dires, dijoystate2, diRetryCount)
+// This is for rebinding keys
+u8 *Controller::GetControllerState()
+{
+    JOYINFOEX joyinfoex;
+    u32 joyButtonBit;
+    u32 joyButtonIndex;
+
+    i32 dires;
+    DIJOYSTATE2 dijoystate2;
+    i32 diRetryCount;
+
+    memset(&g_ControllerData, 0, sizeof(g_ControllerData));
+    if (g_Supervisor.m_Controller == NULL)
+    {
+        memset(&joyinfoex, 0, sizeof(JOYINFOEX));
+        joyinfoex.dwSize = sizeof(JOYINFOEX);
+        joyinfoex.dwFlags = JOY_RETURNALL;
+        if (joyGetPosEx(0, &joyinfoex) != JOYERR_NOERROR)
+        {
+            return g_ControllerData;
+        }
+        for (joyButtonBit = joyinfoex.dwButtons, joyButtonIndex = 0; joyButtonIndex < 32;
+             joyButtonIndex += 1, joyButtonBit >>= 1)
+        {
+            if ((joyButtonBit & 1) != 0)
+            {
+                g_ControllerData[joyButtonIndex] = 0x80;
+            }
+        }
+        return g_ControllerData;
+    }
+    else
+    {
+        dires = g_Supervisor.m_Controller->Poll();
+        if (FAILED(dires))
+        {
+            diRetryCount = 0;
+            utils::DebugPrint("error : DIERR_INPUTLOST\n");
+            dires = g_Supervisor.m_Controller->Acquire();
+            while (dires == DIERR_INPUTLOST)
+            {
+                dires = g_Supervisor.m_Controller->Acquire();
+                diRetryCount++;
+                if (diRetryCount >= 400)
+                {
+                    utils::DebugPrint("error : DIERR_INPUTLOST %d\n", diRetryCount);
+                    return g_ControllerData;
+                }
+            }
+            return g_ControllerData;
+        }
+        /* dires = */ g_Supervisor.m_Controller->GetDeviceState(sizeof(DIJOYSTATE2), &dijoystate2);
+        // TODO: seems ZUN forgot "dires =" above
+        if (FAILED(dires))
+        {
+            return g_ControllerData;
+        }
+        memcpy(&g_ControllerData, dijoystate2.rgbButtons, sizeof(dijoystate2.rgbButtons));
+        return g_ControllerData;
+    }
+}
+
 #pragma var_order(inCursor, outCursorBackup, i, out, outCursor, numUnencrypted, unused)
 LPBYTE FileSystem::Decrypt(LPBYTE inData, i32 size, u8 xorValue, u8 xorValueInc, i32 chunkSize, i32 maxBytes)
 {
