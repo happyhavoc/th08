@@ -1230,6 +1230,15 @@ f32 AddNormalizeAngle(f32 a, f32 b)
     return a;
 }
 
+#pragma var_order(sinOut, cosOut)
+void Rotate(D3DXVECTOR3 *outVector, D3DXVECTOR3 *point, f32 angle)
+{
+    f32 sinOut = sinf(angle);
+    f32 cosOut = cosf(angle);
+    outVector->x = cosOut * point->x - sinOut * point->y;
+    outVector->y = cosOut * point->y + sinOut * point->x;
+}
+
 GameErrorContext::GameErrorContext()
 {
     m_BufferEnd = m_Buffer;
