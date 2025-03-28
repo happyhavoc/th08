@@ -170,7 +170,8 @@ class ZunMemory
     ZunMemory();
     ~ZunMemory();
 
-    void *Alloc(size_t size, const char *debugText)
+    // NOTE: the default parameter for debugText is probably just __FILE__
+    void *Alloc(size_t size, const char *debugText = "d:\\cygwin\\home\\zun\\prog\\th08\\global.h")
     {
         return malloc(size);
     }
@@ -180,9 +181,54 @@ class ZunMemory
         free(ptr);
     }
 
+    void *AddToRegistry(void *ptr, size_t size, char *name)
+    {
+#ifdef DEBUG
+        m_bRegistryInUse = TRUE;
+        for (i32 i = 0; i < ARRAY_SIZE_SIGNED(m_Registry); i++)
+        {
+            if (m_Registry[i] == NULL)
+            {
+                RegistryInfo *info = (RegistryInfo *)malloc(sizeof(*info));
+                if (info != NULL)
+                {
+                    info->data = ptr;
+                    info->size = size;
+                    info->name = name;
+                    m_Registry[i] = info;
+                }
+                break;
+            }
+        }
+#endif
+        return ptr;
+    }
+
+    void RemoveFromRegistry(VOID *ptr)
+    {
+#ifdef DEBUG
+        for (i32 i = 0; i < ARRAY_SIZE_SIGNED(m_Registry); i++)
+        {
+            if (m_Registry[i] == ptr)
+            {
+                free(m_Registry[i]);
+                m_Registry[i] = NULL;
+                break;
+            }
+        }
+#endif
+    }
+
   private:
-    LPVOID m_Unk0[0x1000];
-    BOOL m_Unk4000;
+    struct RegistryInfo
+    {
+        void *data;
+        size_t size;
+        char *name;
+    };
+
+    RegistryInfo *m_Registry[0x1000];
+    BOOL m_bRegistryInUse;
 };
 
 DIFFABLE_EXTERN(Rng, g_Rng);
