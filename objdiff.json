@@ -1,80 +1,80 @@
 {
-    "custom_make": "python",
-    "custom_args": [
-        "./scripts/build.py",
-        "--build-type=objdiffbuild",
-        "--object-name"
-    ],
-    "target_dir": "build/objdiff/orig",
-    "base_dir": "build/objdiff/reimpl",
-    "build_base": true,
-    "build_target": false,
-    "watch_patterns": [
-        "*.c",
-        "*.cpp",
-        "*.h",
-        "*.hpp"
-    ],
-    "units": [
-        {
-            "name": "Global",
-            "target_path": "build/objdiff/orig/Global.obj",
-            "base_path": "build/objdiff/reimpl/Global.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "Lzss",
-            "target_path": "build/objdiff/orig/Lzss.obj",
-            "base_path": "build/objdiff/reimpl/Lzss.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "main",
-            "target_path": "build/objdiff/orig/main.obj",
-            "base_path": "build/objdiff/reimpl/main.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "Midi",
-            "target_path": "build/objdiff/orig/Midi.obj",
-            "base_path": "build/objdiff/reimpl/Midi.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "PbgArchive",
-            "target_path": "build/objdiff/orig/PbgArchive.obj",
-            "base_path": "build/objdiff/reimpl/PbgArchive.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "PbgFile",
-            "target_path": "build/objdiff/orig/PbgFile.obj",
-            "base_path": "build/objdiff/reimpl/PbgFile.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "SoundPlayer",
-            "target_path": "build/objdiff/orig/SoundPlayer.obj",
-            "base_path": "build/objdiff/reimpl/SoundPlayer.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "TextHelper",
-            "target_path": "build/objdiff/orig/TextHelper.obj",
-            "base_path": "build/objdiff/reimpl/TextHelper.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "utils",
-            "target_path": "build/objdiff/orig/utils.obj",
-            "base_path": "build/objdiff/reimpl/utils.obj",
-            "reverse_fn_order": false
-        },
-        {
-            "name": "zwave",
-            "target_path": "build/objdiff/orig/zwave.obj",
-            "base_path": "build/objdiff/reimpl/zwave.obj",
-            "reverse_fn_order": false
-        }
-    ]
+  "custom_make": "python",
+  "custom_args": [
+    "./scripts/build.py",
+    "--build-type=objdiffbuild",
+    "--object-name"
+  ],
+  "target_dir": "build/objdiff/orig",
+  "base_dir": "build/objdiff/reimpl",
+  "build_base": true,
+  "build_target": false,
+  "watch_patterns": [
+    "*.c",
+    "*.cpp",
+    "*.h",
+    "*.hpp"
+  ],
+  "units": [
+    {
+      "name": "Global",
+      "target_path": "build/objdiff/orig/Global.obj",
+      "base_path": "build/objdiff/reimpl/Global.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "Lzss",
+      "target_path": "build/objdiff/orig/Lzss.obj",
+      "base_path": "build/objdiff/reimpl/Lzss.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "main",
+      "target_path": "build/objdiff/orig/main.obj",
+      "base_path": "build/objdiff/reimpl/main.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "Midi",
+      "target_path": "build/objdiff/orig/Midi.obj",
+      "base_path": "build/objdiff/reimpl/Midi.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "PbgArchive",
+      "target_path": "build/objdiff/orig/PbgArchive.obj",
+      "base_path": "build/objdiff/reimpl/PbgArchive.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "PbgFile",
+      "target_path": "build/objdiff/orig/PbgFile.obj",
+      "base_path": "build/objdiff/reimpl/PbgFile.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "SoundPlayer",
+      "target_path": "build/objdiff/orig/SoundPlayer.obj",
+      "base_path": "build/objdiff/reimpl/SoundPlayer.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "TextHelper",
+      "target_path": "build/objdiff/orig/TextHelper.obj",
+      "base_path": "build/objdiff/reimpl/TextHelper.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "utils",
+      "target_path": "build/objdiff/orig/utils.obj",
+      "base_path": "build/objdiff/reimpl/utils.obj",
+      "reverse_fn_order": false
+    },
+    {
+      "name": "zwave",
+      "target_path": "build/objdiff/orig/zwave.obj",
+      "base_path": "build/objdiff/reimpl/zwave.obj",
+      "reverse_fn_order": false
+    }
+  ]
 }
