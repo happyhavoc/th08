@@ -5,6 +5,8 @@
 #include "SoundPlayer.hpp"
 #include "Supervisor.hpp"
 #include "TextHelper.hpp"
+#include "ZunBool.hpp"
+#include "ZunResult.hpp"
 #include "dxutil.hpp"
 #include "i18n.hpp"
 #include "inttypes.hpp"

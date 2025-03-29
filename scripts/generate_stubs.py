@@ -41,6 +41,7 @@ if args.output:
 ret_vals = {
     "void": "",
     "bool": "false",
+    "ZunBool": "false",
     "u8": "0",
     "i8": "0",
     "u16": "0",
@@ -55,6 +56,8 @@ ret_vals = {
     "long": "0",
     "f32": "0.0",
     "float": "0.0",
+    "f64": "0.0",
+    "double": "0.0",
     "ZunResult": "ZUN_ERROR",
     "ChainCallbackResult": "CHAIN_CALLBACK_RESULT_EXIT_GAME_SUCCESS",
     "FireBulletResult": "FBR_STOP_SPAWNING",
