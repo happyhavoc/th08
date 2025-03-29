@@ -629,7 +629,7 @@ th08::Item::FUN_00441770,0x441770,0x6a,__thiscall,,void,Item*
 th08::ItemManager::FUN_004417e0,0x4417e0,0x4f,__thiscall,,u8,ItemManager*
 FUN_00441830,0x441830,0x1b,__thiscall,,bool,i32,i32
 th08::GameManager::AddPower,0x441850,0x4d,__thiscall,,void,GameManager*,i32
-th08::GameWindow::GameWindow,0x4418a0,0x1c,__fastcall,,GameWindow*,GameWindow*
+th08::main::GameWindow::GameWindow,0x4418a0,0x1c,__fastcall,,GameWindow*,GameWindow*
 WinMain,0x4418c0,0x54a,__stdcall,,i32,HINSTANCE__*,HINSTANCE__*,char*,i32
 th08::AnmManager::`scalar_deleting_destructor',0x441e10,0x2e,__thiscall,,AnmManager*,AnmManager*,u32
 th08::MidiOutput::`scalar_deleting_destructor',0x441e40,0x2e,__thiscall,,MidiOutput*,MidiOutput*,u32
