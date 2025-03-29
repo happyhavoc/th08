@@ -1,0 +1,12 @@
+th08::main::GetTimestamp
+th08::main::InitD3DInterface
+th08::main::CreateGameWindow
+th08::main::WindowProc
+th08::main::InitD3DRendering
+th08::main::FormatD3DCapabilities
+th08::main::FormatCapability
+th08::main::ResetRenderState
+th08::main::CheckForRunningGameInstance
+th08::main::ActivateWindow
+th08::main::CalcExecutableChecksum
+th08::main::ResolveIt

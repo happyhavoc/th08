@@ -97,7 +97,6 @@ def configure(build_type):
             "main",
             "Midi",
             "Supervisor",
-            "GameWindow",
             "SoundPlayer",
             "zwave",
         ]
