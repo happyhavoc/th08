@@ -9,8 +9,6 @@
 
 namespace th08
 {
-namespace main
-{
 enum RenderResult {
     RENDER_RESULT_KEEP_RUNNING = 0,
     RENDER_RESULT_EXIT_SUCCESS = 1,
@@ -39,30 +37,28 @@ struct GameWindow
         memset(this, 0, sizeof(*this));
     }
 
-    void Present();
+    RenderResult Render();
+    static void Present();
+    f64 GetTimestamp();
+    static ZunBool InitD3DInterface();
+    static ZunBool CreateGameWindow(HINSTANCE hInstance);
+    static LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    static ZunBool InitD3DRendering();
+    static void FormatD3DCapabilities(D3DCAPS8 *caps, char *buf);
+    static char *FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf);
+    static void ResetRenderState();
+    static ZunResult CheckForRunningGameInstance();
+    static void ActivateWindow(HWND hWnd);
+    static ZunResult CalcExecutableChecksum();
+    static HRESULT ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
 };
 C_ASSERT(sizeof(GameWindow) == 0x44);
 
-f64 GetTimestamp();
-ZunBool InitD3DInterface();
-ZunBool CreateGameWindow(HINSTANCE hInstance);
-LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-ZunBool InitD3DRendering();
-void FormatD3DCapabilities(D3DCAPS8 *caps, char *buf);
-char *FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf);
-void ResetRenderState();
-ZunResult CheckForRunningGameInstance();
-void ActivateWindow(HWND hWnd);
-ZunResult CalcExecutableChecksum();
-HRESULT ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
-
 DIFFABLE_STATIC(HANDLE, g_ExclusiveMutex);
 DIFFABLE_STATIC(GameWindow, g_GameWindow);
-}; // namespace main
 }; // namespace th08
 
 using namespace th08;
-using namespace main;
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
