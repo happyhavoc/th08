@@ -136,6 +136,23 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
     }
 }
 
+#pragma var_order(touhouWinThread, lockoutTime, foregroundWinThread)
+void GameWindow::ActivateWindow(HWND hWnd)
+{
+    DWORD foregroundWinThread;
+    u32 lockoutTime;
+    DWORD touhouWinThread;
+
+    foregroundWinThread = GetWindowThreadProcessId(GetForegroundWindow(), NULL);
+    touhouWinThread = GetWindowThreadProcessId(hWnd, NULL);
+    AttachThreadInput(touhouWinThread, foregroundWinThread, true);
+    SystemParametersInfoA(SPI_GETFOREGROUNDLOCKTIMEOUT, 0, &lockoutTime, 0);
+    SystemParametersInfoA(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, (PVOID) 0, 0);
+    SetActiveWindow(hWnd);
+    SystemParametersInfoA(SPI_SETFOREGROUNDLOCKTIMEOUT, 0, &lockoutTime, 0);
+    AttachThreadInput(touhouWinThread, foregroundWinThread, false);
+}
+
 #pragma var_order(moduleFilenameBuf, i, fileSize, dataCursor, checksum, dataBase)
 i32 GameWindow::CalcExecutableChecksum()
 {
@@ -156,7 +173,7 @@ i32 GameWindow::CalcExecutableChecksum()
         {
             return -1;
         }
-        
+
         for (i = 0; i < (fileSize / 4) - 1; i++, dataCursor++)
         {
             checksum += *dataCursor;

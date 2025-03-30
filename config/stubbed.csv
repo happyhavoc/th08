@@ -8,4 +8,3 @@ th08::GameWindow::InitD3DRendering
 th08::GameWindow::FormatD3DCapabilities
 th08::GameWindow::FormatCapability
 th08::GameWindow::ResetRenderState
-th08::GameWindow::ActivateWindow
