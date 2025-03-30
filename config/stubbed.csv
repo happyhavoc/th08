@@ -10,4 +10,3 @@ th08::GameWindow::FormatCapability
 th08::GameWindow::ResetRenderState
 th08::GameWindow::ActivateWindow
 th08::GameWindow::CalcExecutableChecksum
-th08::GameWindow::ResolveIt

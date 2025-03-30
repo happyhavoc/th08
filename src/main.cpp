@@ -1,8 +1,10 @@
 #define _WIN32_WINNT 0x0500
 
 #include <d3dx8.h>
-#include <windows.h>
+#include <shobjidl.h>
+#include <shlguid.h>
 #include <string.h>
+#include <windows.h>
 #include "diffbuild.hpp"
 #include "Global.hpp"
 #include "ZunBool.hpp"
@@ -26,7 +28,7 @@ struct GameWindow
     ZunBool m_WindowIsInactive;
     i8 m_FramesSinceRedraw;
     LARGE_INTEGER m_PCFrequency;
-    u8 launchedFromConsole; // Disables vsync when set
+    u8 m_LaunchedFromConsole; // Disables vsync when set
     ZunBool m_ScreenSaveActive;
     ZunBool m_LowPowerActive;
     ZunBool m_PowerOffActive;
@@ -51,7 +53,7 @@ struct GameWindow
     static ZunResult CheckForRunningGameInstance(HINSTANCE hInstance);
     static void ActivateWindow(HWND hWnd);
     static ZunResult CalcExecutableChecksum();
-    static HRESULT ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
+    static ZunBool ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
 };
 C_ASSERT(sizeof(GameWindow) == 0x44);
 
@@ -114,7 +116,7 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
             if (strcmp(moduleFilenameBuf, consoleTitleBuf) != 0)
             {
                 // Won't be set true if TH08 was launched from console with absolute path
-                g_GameWindow.launchedFromConsole = true;
+                g_GameWindow.m_LaunchedFromConsole = true;
             }
         }
 
@@ -133,4 +135,57 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
     {
         return ZUN_SUCCESS;
     }
+}
+
+// Modified version of ResolveIt function used as an example in Microsoft's documentation
+// https://web.archive.org/web/20250210164627/https://learn.microsoft.com/en-us/windows/win32/shell/links#resolving-a-shortcut
+#pragma var_order(hres, retValue, psl, ppf, wPath, wfd)
+ZunBool GameWindow::ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen)
+{
+    HRESULT hres;
+    IPersistFile *ppf;
+    IShellLink *psl;
+    ZunBool retValue;
+    WIN32_FIND_DATA wfd;
+    LPWSTR wPath;
+
+    if (dstPath == NULL)
+    {
+        return false;
+    }
+
+    retValue = false;
+
+    CoInitialize(NULL);
+    hres = CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, (LPVOID *) &psl);
+    if (SUCCEEDED(hres))
+    {
+        hres = psl->QueryInterface(IID_IPersistFile, (void **) &ppf);
+        if (SUCCEEDED(hres))
+        {
+            wPath = new WCHAR[maxPathLen];
+            // Presumably something that set hres was deleted here
+            if (SUCCEEDED(hres))
+            {
+                MultiByteToWideChar(CP_ACP, 0, shortcutPath, -1, wPath, maxPathLen);
+                hres = ppf->Load(wPath, STGM_READ);
+                if (SUCCEEDED(hres))
+                {
+                    hres = psl->GetPath(dstPath, maxPathLen, &wfd, 0);
+                    if (SUCCEEDED(hres))
+                    {
+                        retValue = true;
+                    }
+                }
+            }
+
+            delete wPath;
+            ppf->Release();
+        }
+
+        psl->Release();
+    }
+
+    CoUninitialize();
+    return retValue;
 }
