@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <string.h>
 #include "diffbuild.hpp"
+#include "Global.hpp"
 #include "ZunBool.hpp"
 #include "ZunResult.hpp"
 
@@ -25,7 +26,7 @@ struct GameWindow
     ZunBool m_WindowIsInactive;
     i8 m_FramesSinceRedraw;
     LARGE_INTEGER m_PCFrequency;
-    u8 m_1C; // Set according window and console names? Disables vsync if set
+    u8 launchedFromConsole; // Disables vsync when set
     ZunBool m_ScreenSaveActive;
     ZunBool m_LowPowerActive;
     ZunBool m_PowerOffActive;
@@ -47,7 +48,7 @@ struct GameWindow
     static void FormatD3DCapabilities(D3DCAPS8 *caps, char *buf);
     static char *FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf);
     static void ResetRenderState();
-    static ZunResult CheckForRunningGameInstance();
+    static ZunResult CheckForRunningGameInstance(HINSTANCE hInstance);
     static void ActivateWindow(HWND hWnd);
     static ZunResult CalcExecutableChecksum();
     static HRESULT ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
@@ -63,4 +64,73 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+#pragma var_order(moduleFilenameBuf, startupInfo, consoleTitleBuf, fileExtension)
+ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
+{
+    char consoleTitleBuf[MAX_PATH + 1];
+    char *fileExtension;
+    char moduleFilenameBuf[MAX_PATH + 1];
+    STARTUPINFO startupInfo;
+
+    g_ExclusiveMutex = CreateMutexA(NULL, TRUE, "Touhou 08 App");
+    
+    if (GetLastError() == ERROR_ALREADY_EXISTS)
+    {
+        g_GameErrorContext.Fatal("A");
+        return ZUN_ERROR;
+    }
+
+    startupInfo.cb = sizeof(startupInfo);
+    memset(&startupInfo.lpReserved, 0, sizeof(startupInfo) - 4); // Fill remaining struct members
+
+    // GetModuleFileNameA will get the absolute path of the TH08 executable
+    // GetConsoleTitleA will always fail(?) because TH08 isn't a console application. consoleTitleBuf is clobbered before being read anyway
+    // GetStartupInfoA will return in lpTitle the absolute path of the executable/shortcut when launched from a graphical shell
+    //   or the relative path the TH08 executable was launched with when launched from a console
+    GetModuleFileNameA(NULL, moduleFilenameBuf, ARRAY_SIZE(moduleFilenameBuf));
+    GetConsoleTitleA(consoleTitleBuf, ARRAY_SIZE(consoleTitleBuf));
+    GetStartupInfoA(&startupInfo);
+
+    if (startupInfo.lpTitle != NULL)
+    {
+        fileExtension = strrchr(startupInfo.lpTitle, '.');
+        if (FileSystem::CheckIfFileAlreadyExists(startupInfo.lpTitle) && fileExtension != NULL)
+        {
+            if (_stricmp(fileExtension, ".lnk") == 0)
+            {
+                do
+                {
+                    ResolveIt(startupInfo.lpTitle, consoleTitleBuf, MAX_PATH);
+                    fileExtension = strrchr(consoleTitleBuf, '.');
+                } while ((_stricmp(fileExtension, ".lnk") == 0));
+            }
+            else
+            {
+                strcpy(consoleTitleBuf, startupInfo.lpTitle);
+            }
+
+            if (strcmp(moduleFilenameBuf, consoleTitleBuf) != 0)
+            {
+                // Won't be set true if TH08 was launched from console with absolute path
+                g_GameWindow.launchedFromConsole = true;
+            }
+        }
+
+        g_Supervisor.m_Flags &= 0xffffffbf;
+    }
+    else
+    {
+        g_Supervisor.m_Flags |= 0x00000040;
+    }
+
+    if (g_ExclusiveMutex == NULL)
+    {
+        return ZUN_ERROR;
+    }
+    else
+    {
+        return ZUN_SUCCESS;
+    }
 }

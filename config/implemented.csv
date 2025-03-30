@@ -42,6 +42,7 @@ th08::Supervisor::EnterCriticalSectionWrapper
 th08::Supervisor::LeaveCriticalSectionWrapper
 th08::Supervisor::LoadConfig
 WinMain
+th08::GameWindow::CheckForRunningGameInstance
 th08::MidiDevice::MidiDevice
 th08::MidiDevice::~MidiDevice
 th08::MidiDevice::OpenDevice
