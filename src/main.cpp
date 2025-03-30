@@ -28,7 +28,7 @@ struct GameWindow
     ZunBool m_WindowIsInactive;
     i8 m_FramesSinceRedraw;
     LARGE_INTEGER m_PCFrequency;
-    u8 m_LaunchedFromConsole; // Disables vsync when set
+    u8 m_UsesRelativePath; // Disables vsync when set
     ZunBool m_ScreenSaveActive;
     ZunBool m_LowPowerActive;
     ZunBool m_PowerOffActive;
@@ -52,7 +52,7 @@ struct GameWindow
     static void ResetRenderState();
     static ZunResult CheckForRunningGameInstance(HINSTANCE hInstance);
     static void ActivateWindow(HWND hWnd);
-    static ZunResult CalcExecutableChecksum();
+    static i32 CalcExecutableChecksum();
     static ZunBool ResolveIt(char *shortcutPath, char *dstPath, i32 maxPathLen);
 };
 C_ASSERT(sizeof(GameWindow) == 0x44);
@@ -115,8 +115,7 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
 
             if (strcmp(moduleFilenameBuf, consoleTitleBuf) != 0)
             {
-                // Won't be set true if TH08 was launched from console with absolute path
-                g_GameWindow.m_LaunchedFromConsole = true;
+                g_GameWindow.m_UsesRelativePath = true;
             }
         }
 
@@ -135,6 +134,43 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
     {
         return ZUN_SUCCESS;
     }
+}
+
+#pragma var_order(moduleFilenameBuf, i, fileSize, dataCursor, checksum, dataBase)
+i32 GameWindow::CalcExecutableChecksum()
+{
+    u32 checksum;
+    u32 *dataBase;
+    u32 *dataCursor;
+    i32 fileSize;
+    i32 i;
+    char moduleFilenameBuf[MAX_PATH + 1];
+
+    if (GetModuleFileNameA(NULL, moduleFilenameBuf, ARRAY_SIZE(moduleFilenameBuf)))
+    {
+        checksum = 0;
+        dataCursor = (u32 *) FileSystem::OpenFile(moduleFilenameBuf, &fileSize, true);
+        dataBase = dataCursor;
+
+        if (dataCursor == NULL)
+        {
+            return -1;
+        }
+        
+        for (i = 0; i < (fileSize / 4) - 1; i++, dataCursor++)
+        {
+            checksum += *dataCursor;
+        }
+
+        utils::DebugPrint("main sum %d\r\n", checksum);
+        g_ZunMemory.Free(dataBase);
+        g_Supervisor.m_ExeChecksum = checksum;
+        g_Supervisor.m_ExeSize = fileSize;
+
+        return checksum;
+    }
+
+    return -1;
 }
 
 // Modified version of ResolveIt function used as an example in Microsoft's documentation

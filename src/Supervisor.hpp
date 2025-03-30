@@ -194,7 +194,12 @@ struct Supervisor
     u8 m_LockCounts[4];
     DWORD unk2fc;
 
-    unknown_fields(0x300, 0x64);
+    unknown_fields(0x300, 0x54);
+
+    u32 m_ExeChecksum;
+    u32 m_ExeSize;
+
+    unknown_fields(0x35c, 0x8);
 };
 C_ASSERT(sizeof(Supervisor) == 0x364);
 
