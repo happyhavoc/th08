@@ -91,6 +91,7 @@ def configure(build_type):
         )
 
         cxx_sources = [
+            "Background",
             "utils",
             "Global",
             "TextHelper",

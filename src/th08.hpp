@@ -1,8 +1,10 @@
 #pragma once
 
+#include "Background.hpp"
 #include "Global.hpp"
 #include "Midi.hpp"
 #include "SoundPlayer.hpp"
+#include "SprtCtrl.hpp"
 #include "Supervisor.hpp"
 #include "TextHelper.hpp"
 #include "ZunBool.hpp"

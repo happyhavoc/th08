@@ -1,3 +1,4 @@
+Background,th08::Background
 Global,th08::Chain,th08::ChainElem,th08::Controller,th08::FileSystem,th08::GameErrorContext,th08::Rng,th08::ZunMemory
 Lzss,th08::Lzss
 main,WinMain,th08::GameWindow
@@ -8,5 +9,6 @@ SoundPlayer,th08::SoundPlayer
 Supervisor,th08::Supervisor
 TextHelper,th08::TextHelper
 Supervisor,th08::Supervisor
+SprtCtrl,th08::SprtCtrl,th08::Sprt,th08::SprtLoaded
 utils,th08::utils
 zwave,th08::CSoundManager,th08::CSound,th08::CStreamingSound,th08::CWaveFile
