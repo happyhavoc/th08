@@ -98,6 +98,7 @@ def configure(build_type):
             "Midi",
             "Supervisor",
             "SoundPlayer",
+            "SprtCtrl"
             "zwave",
         ]
 
