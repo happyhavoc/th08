@@ -75,6 +75,61 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine
     return 0;
 }
 
+void GameWindow::FormatD3DCapabilities(D3DCAPS8 *caps, char *buf)
+{
+    char *strPos;
+
+    strPos = buf;
+
+    strPos += sprintf(strPos, TH_DBG_D3D_CAPS_START);
+    strPos = FormatCapability(TH_DBG_CAPS_READ_SCANLINE, caps->Caps, D3DCAPS_READ_SCANLINE, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_WINDOW_MODE_RENDERING, caps->Caps2, D3DCAPS2_CANRENDERWINDOWED, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_IMMEDIATE_PRESENTATION_SWAP, caps->PresentationIntervals, D3DPRESENT_INTERVAL_IMMEDIATE, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_PRESENTATION_VSYNC, caps->PresentationIntervals, D3DPRESENT_INTERVAL_ONE, strPos);
+    
+    strPos += sprintf(strPos, TH_DBG_CAPS_DEVICE_START);
+    strPos = FormatCapability(TH_DBG_CAPS_NONLOCAL_VRAM_BLIT, caps->DevCaps, D3DDEVCAPS_CANBLTSYSTONONLOCAL, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_HARDWARE_TL, caps->DevCaps, D3DDEVCAPS_HWTRANSFORMANDLIGHT, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_TEXTURES_FROM_NONLOCAL_VRAM, caps->DevCaps, D3DDEVCAPS_TEXTURENONLOCALVIDMEM, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_TEXTURES_FROM_MAIN_MEMORY, caps->DevCaps, D3DDEVCAPS_TEXTURESYSTEMMEMORY, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_TEXTURES_FROM_VRAM, caps->DevCaps, D3DDEVCAPS_TEXTUREVIDEOMEMORY, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_VERTEX_BUFFER_IN_RAM, caps->DevCaps, D3DDEVCAPS_TLVERTEXSYSTEMMEMORY, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_VERTEX_BUFFER_IN_VRAM, caps->DevCaps, D3DDEVCAPS_TLVERTEXVIDEOMEMORY, strPos);
+
+    strPos += sprintf(strPos, TH_DBG_CAPS_PRIMITIVES_START);
+    strPos = FormatCapability(TH_DBG_CAPS_ALPHA_BLENDING, caps->PrimitiveMiscCaps, D3DPMISCCAPS_BLENDOP, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_POINT_CLIPPING, caps->PrimitiveMiscCaps, D3DPMISCCAPS_CLIPPLANESCALEDPOINTS, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_VERTEX_CLIPPING, caps->PrimitiveMiscCaps, D3DPMISCCAPS_CLIPTLVERTS, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_CULL_CCW, caps->PrimitiveMiscCaps, D3DPMISCCAPS_CULLCCW, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_CULL_CW, caps->PrimitiveMiscCaps, D3DPMISCCAPS_CULLCW, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_CULL_NONE, caps->PrimitiveMiscCaps, D3DPMISCCAPS_CULLNONE, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_DEPTH_TEST_TOGGLE, caps->PrimitiveMiscCaps, D3DPMISCCAPS_MASKZ, strPos);
+
+    strPos += sprintf(strPos, TH_DBG_CAPS_RASTERIZER_START);
+    strPos = FormatCapability(TH_DBG_CAPS_ANISOTROPIC_FILTERING, caps->RasterCaps, D3DPRASTERCAPS_ANISOTROPY, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_ANTIALIASING, caps->RasterCaps, D3DPRASTERCAPS_ANTIALIASEDGES, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_DITHERING, caps->RasterCaps, D3DPRASTERCAPS_DITHER, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_RANGE_BASED_FOG, caps->RasterCaps, D3DPRASTERCAPS_FOGRANGE, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_Z_BASED_FOG, caps->RasterCaps, D3DPRASTERCAPS_ZFOG, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_TABLE_BASED_FOG, caps->RasterCaps, D3DPRASTERCAPS_FOGTABLE, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_VERTEX_BASED_FOG, caps->RasterCaps, D3DPRASTERCAPS_FOGVERTEX, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_DEPTH_TEST, caps->RasterCaps, D3DPRASTERCAPS_ZTEST, strPos);
+
+    strPos += sprintf(strPos, TH_DBG_CAPS_SHADING_START);
+    strPos = FormatCapability(TH_DBG_CAPS_GOURAUD_SHADING, caps->ShadeCaps, D3DPSHADECAPS_COLORGOURAUDRGB, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_ALPHA_GOURAUD_SHADING, caps->ShadeCaps, D3DPSHADECAPS_ALPHAGOURAUDBLEND, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_GOURAUD_SHADED_FOG, caps->ShadeCaps, D3DPSHADECAPS_FOGGOURAUD, strPos);
+    
+    strPos += sprintf(strPos, TH_DBG_CAPS_TEXTURE_START);
+    strPos += sprintf(strPos, TH_DBG_CAPS_LARGEST_TEXTURE, caps->MaxTextureWidth, caps->MaxTextureHeight);
+    strPos = FormatCapability(TH_DBG_CAPS_ALPHA_IN_TEXTURE, caps->TextureCaps, D3DPTEXTURECAPS_ALPHA, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_TEXTURE_TRANSFORM, caps->TextureCaps, D3DPTEXTURECAPS_PROJECTED, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_BILINEAR_FILTER_MAG, caps->TextureFilterCaps, D3DPTFILTERCAPS_MAGFLINEAR, strPos);
+    strPos = FormatCapability(TH_DBG_CAPS_BILINEAR_FILTER_MIN, caps->TextureFilterCaps, D3DPTFILTERCAPS_MINFLINEAR, strPos);
+
+    strPos += sprintf(strPos, TH_DBG_CAPS_END);
+}
+
 char *GameWindow::FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf)
 {
     // Who needs strcpy when you have sprintf?

@@ -5,4 +5,3 @@ th08::GameWindow::InitD3DInterface
 th08::GameWindow::CreateGameWindow
 th08::GameWindow::WindowProc
 th08::GameWindow::InitD3DRendering
-th08::GameWindow::FormatD3DCapabilities
