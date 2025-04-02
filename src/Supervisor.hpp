@@ -111,11 +111,6 @@ struct Supervisor
         return this->m_Cfg.opts.displayMinimumGraphics | this->m_Cfg.opts.clearBackBufferOnRefresh;
     }
 
-    u32 IsMusicPreloadEnabled()
-    {
-        return this->m_Cfg.opts.preloadMusic;
-    }
-
     ZunBool IsHardwareBlendingEnabled()
     {
         return m_Cfg.opts.useD3dHwTextureBlending;
@@ -131,9 +126,29 @@ struct Supervisor
         return m_Cfg.opts.force16bitTextures;
     }
 
+    ZunBool IsDepthTestDisabled()
+    {
+        return m_Cfg.opts.disableDepthTest;
+    }
+
+    ZunBool IsColorCompositingDisabled()
+    {
+        return m_Cfg.opts.disableColorCompositing;
+    }
+
+    ZunBool IsFogDisabled()
+    {
+        return m_Cfg.opts.disableFog;
+    }
+
     ZunBool IsReferenceRasterizerMode()
     {
         return m_Cfg.opts.referenceRasterizerMode;
+    }
+
+    u32 IsMusicPreloadEnabled()
+    {
+        return this->m_Cfg.opts.preloadMusic;
     }
 
     ZunBool IsWindowed()

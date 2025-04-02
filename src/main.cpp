@@ -5,9 +5,13 @@
 #include <shlguid.h>
 #include <string.h>
 #include <windows.h>
+#include "Background.hpp"
 #include "diffbuild.hpp"
 #include "Global.hpp"
+#include "Supervisor.hpp" // Official name: mother.hpp
+#include "SprtCtrl.hpp"
 #include "ZunBool.hpp"
+#include "ZunColor.hpp"
 #include "ZunResult.hpp"
 
 namespace th08
@@ -66,6 +70,124 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+#pragma var_order(fogVal, fogDensity)
+void GameWindow::ResetRenderState()
+{
+    // Required to pass floats to SetTextureStageState without implicit conversion to int
+    f32 fogDensity;
+    f32 fogVal;
+
+    if (!g_Supervisor.IsDepthTestDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ZENABLE, true);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ZENABLE, false);
+    }
+
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_LIGHTING, false);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_SHADEMODE, D3DSHADE_GOURAUD);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ZFUNC, D3DCMP_ALWAYS);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ALPHATESTENABLE, true);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ALPHAREF, 4);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
+    
+    if (!g_Supervisor.IsFogDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGENABLE, true);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGENABLE, false);
+    }
+
+    fogDensity = 1.0f;
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGDENSITY, *(u32 *) &fogDensity);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGTABLEMODE, D3DFOG_NONE);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGVERTEXMODE, D3DFOG_LINEAR);
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGCOLOR, COLOR_LIGHT_GREY);
+
+    fogVal = 1000.0f;
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGSTART, *(u32 *) &fogVal);
+    fogVal = 5000.0f;
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_FOGEND, *(u32 *) &fogVal);
+
+    // Always evaluates true because Zun mistakenly used bitwise or instead of and
+    // Doesn't matter, because it disables what it tried to test for anyway
+    if (g_Supervisor.m_D3dCaps.RasterCaps | D3DPRASTERCAPS_ANTIALIASEDGES)
+    {
+        g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_EDGEANTIALIAS, false);
+    }
+
+    g_Supervisor.m_D3dDevice->SetRenderState(D3DRS_MULTISAMPLEANTIALIAS, false);
+
+    // Alpha texture settings
+    if (!g_Supervisor.IsColorCompositingDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+    }
+
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+
+    if (!g_Supervisor.IsVertexBufferDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_TFACTOR);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+    }
+
+    // Color texture settings
+    if (!g_Supervisor.IsColorCompositingDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_MODULATE);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+    }
+
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_COLORARG1, D3DTA_TEXTURE);
+
+    if (!g_Supervisor.IsVertexBufferDisabled())
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_TFACTOR);
+    }
+    else
+    {
+        g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_COLORARG2, D3DTA_DIFFUSE);
+    }
+
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_MIPFILTER, D3DTEXF_NONE);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_MAGFILTER, D3DTEXF_LINEAR);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_MINFILTER, D3DTEXF_LINEAR);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSW, D3DTADDRESS_CLAMP);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSU, D3DTADDRESS_WRAP);
+    g_Supervisor.m_D3dDevice->SetTextureStageState(0, D3DTSS_ADDRESSV, D3DTADDRESS_WRAP);
+
+    if (g_SprtCtrl != NULL)
+    {
+        g_SprtCtrl->ClearBlendMode();
+        g_SprtCtrl->ClearColorOp();
+        g_SprtCtrl->ClearVertexShader();
+        g_SprtCtrl->ClearTexture();
+        g_SprtCtrl->ClearCameraSettings();
+    }
+
+    g_Background.m_SkyFogNeedsSetup = true;
 }
 
 #pragma var_order(moduleFilenameBuf, startupInfo, consoleTitleBuf, fileExtension)

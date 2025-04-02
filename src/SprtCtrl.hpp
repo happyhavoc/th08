@@ -22,6 +22,26 @@ struct VertexTex1DiffuseXyzrhw
     D3DXVECTOR2 textureUV;
 };
 
+enum SprtBlendMode
+{
+    SprtBlendMode_Unset = -1
+};
+
+enum SprtColorOp
+{
+    SprtColorOp_Unset = -1
+};
+
+enum SprtVertexShader
+{
+    SprtVertexShader_Unset = -1
+};
+
+enum SprtCameraMode
+{
+    SortCameraMode_Unset = -1
+};
+
 // Unofficial name: AnmVm 
 struct Sprt
 {
@@ -32,6 +52,31 @@ C_ASSERT(sizeof(Sprt) == 0x2a4);
 // Unofficial name: AnmManager
 struct SprtCtrl
 {
+    void ClearBlendMode()
+    {
+        m_CurrentBlendMode = SprtBlendMode_Unset;
+    }
+
+    void ClearColorOp()
+    {
+        m_CurrentColorOp = SprtColorOp_Unset;
+    }
+
+    void ClearVertexShader()
+    {
+        m_CurrentVertexShader = SprtVertexShader_Unset;
+    }
+
+    void ClearTexture()
+    {
+        m_CurrentTexture = NULL;
+    }
+
+    void ClearCameraSettings()
+    {
+        m_CameraMode = SortCameraMode_Unset;
+    }
+
     unknown_fields(0x0, 0x1c24);
     D3DXVECTOR3 unk0x1c24;
     unknown_fields(0x1c30, 0x34);
