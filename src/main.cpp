@@ -3,10 +3,13 @@
 #include <d3dx8.h>
 #include <shobjidl.h>
 #include <shlguid.h>
+#include <stdio.h>
 #include <string.h>
 #include <windows.h>
 #include "Background.hpp"
 #include "diffbuild.hpp"
+#include "i18n.hpp"
+#include "inttypes.hpp"
 #include "Global.hpp"
 #include "Supervisor.hpp" // Official name: mother.hpp
 #include "SprtCtrl.hpp"
@@ -70,6 +73,23 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+char *GameWindow::FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf)
+{
+    // Who needs strcpy when you have sprintf?
+    buf += sprintf(buf, capabilityName);
+
+    if ((capabilityFlags & mask) == 0)
+    {
+        buf += sprintf(buf, TH_DBG_CAPABILITY_NOT_PRESENT);
+    }
+    else
+    {
+        buf += sprintf(buf, TH_DBG_CAPABILITY_PRESENT);
+    }
+
+    return buf;
 }
 
 #pragma var_order(fogVal, fogDensity)
@@ -202,7 +222,7 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
     
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        g_GameErrorContext.Fatal("A");
+        g_GameErrorContext.Fatal(TH_ERR_ALREADY_RUNNING);
         return ZUN_ERROR;
     }
 

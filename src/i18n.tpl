@@ -3,6 +3,9 @@
 #define TH_LANG TH_JP
 
 // JP
+#define TH_JP_DBG_CAPABILITY_NOT_PRESENT "不可\r\n"
+#define TH_JP_DBG_CAPABILITY_PRESENT "可\r\n"
+#define TH_JP_ERR_ALREADY_RUNNING "二つは起動できません\r\n"
 #define TH_JP_ERR_NO_PAD_FOUND "使えるパッドが存在しないようです、残念\r\n"
 #define TH_JP_ERR_MIDI_FAILED_TO_READ_FILE "error : MIDI File が読み込めない %s \rv\r\n"
 #define TH_JP_ERR_MIDI_NOT_LOADED "error : まだMIDIが読み込まれていないのに再生しようとしている\n"
@@ -37,6 +40,9 @@
 #define TH_JP_DBG_SOUNDPLAYER_BGM_THREAD_TERMINATED "atention : ストリーミング用スレッドは終了しました。\r\n"
 
 // EN
+#define TH_EN_DBG_CAPABILITY_NOT_PRESENT "Not present\r\n"
+#define TH_EN_DBG_CAPABILITY_PRESENT "Present\r\n"
+#define TH_EN_ERR_ALREADY_RUNNING "Can't start a second game instance!\r\n"
 #define TH_EN_ERR_NO_PAD_FOUND "Unfortunately, there doesn't seem to be a pad that can be used.\r\n"
 #define TH_EN_ERR_MIDI_FAILED_TO_READ_FILE "error : MIDI File %s could not be read.\n"
 #define TH_EN_ERR_MIDI_NOT_LOADED "error : MIDI not loaded before being playback started.\n"
@@ -73,6 +79,9 @@
 
 #define TH_MAKE_LANG_STR(lang, id) TH_CONCAT_HELPER(lang, id)
 
+#define TH_DBG_CAPABILITY_NOT_PRESENT(TH_LANG, _DBG_CAPABILITY_NOT_PRESENT)
+#define TH_DBG_CAPABILITY_PRESENT(TH_LANG, _DBG_CAPABILITY_PRESENT)
+#define TH_ERR_ALREADY_RUNNING(TH_LANG, _ERR_ALREADY_RUNNING)
 #define TH_ERR_NO_PAD_FOUND TH_MAKE_LANG_STR(TH_LANG, _ERR_NO_PAD_FOUND)
 #define TH_ERR_MIDI_FAILED_TO_READ_FILE TH_MAKE_LANG_STR(TH_LANG, _ERR_MIDI_FAILED_TO_READ_FILE)
 #define TH_ERR_MIDI_NOT_LOADED TH_MAKE_LANG_STR(TH_LANG, _ERR_MIDI_NOT_LOADED)
