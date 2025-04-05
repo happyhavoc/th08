@@ -77,6 +77,51 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine
     return 0;
 }
 
+ZunBool GameWindow::CreateGameWindow(HINSTANCE hInstance)
+{
+    WNDCLASS baseClass;
+    i32 height;
+    i32 width;
+
+    memset(&baseClass, 0, sizeof(baseClass));
+
+    baseClass.hbrBackground = (HBRUSH) GetStockObject(BLACK_BRUSH);
+    baseClass.hCursor = LoadCursorA(NULL, IDC_ARROW);
+    baseClass.hInstance = hInstance;
+    baseClass.lpfnWndProc = WindowProc;
+    g_GameWindow.m_WindowIsActive = true;
+    g_GameWindow.m_WindowIsInactive = false;
+    baseClass.lpszClassName = "BASE";
+    RegisterClassA(&baseClass);
+
+    if (!g_Supervisor.IsWindowed())
+    {
+        width = GAME_WINDOW_WIDTH;
+        height = GAME_WINDOW_HEIGHT;
+
+        g_GameWindow.m_Window = CreateWindowExA(0, "BASE", TH_WINDOW_TITLE, WS_OVERLAPPEDWINDOW, 0, 0, width,
+                                                height, NULL, NULL, hInstance, NULL);
+    }
+    else
+    {
+        width = GetSystemMetrics(SM_CXDLGFRAME) * 2 + GAME_WINDOW_WIDTH;
+        height = GetSystemMetrics(SM_CYDLGFRAME) * 2 + GetSystemMetrics(SM_CYCAPTION) + GAME_WINDOW_HEIGHT;
+
+        g_GameWindow.m_Window = CreateWindowExA(0, "BASE", TH_WINDOW_TITLE, WS_VISIBLE | WS_MINIMIZEBOX | WS_SYSMENU,
+                                                CW_USEDEFAULT, CW_USEDEFAULT, width, height, NULL, NULL, hInstance, NULL);
+    }
+
+    g_Supervisor.m_HwndGameWindow = g_GameWindow.m_Window;
+
+    if (g_GameWindow.m_Window == NULL)
+    {
+        return true;
+    }
+
+    ActivateWindow(g_GameWindow.m_Window);
+    return false;
+}
+
 LRESULT __stdcall GameWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg)

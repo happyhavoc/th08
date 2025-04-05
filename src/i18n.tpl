@@ -3,6 +3,7 @@
 #define TH_LANG TH_JP
 
 // JP
+#define TH_JP_WINDOW_TITLE "東方永夜抄　〜 Imperishable Night. ver 1.00d"
 #define TH_JP_DBG_SCREEN_INIT_32BITS "初回起動、画面を 32Bits で初期化しました\r\n"
 #define TH_JP_DBG_SET_REFRESH_RATE_60HZ "リフレッシュレートを60Hzに変更を試みます\r\n"
 #define TH_JP_DBG_TRY_ASYNC_VSYNC "VSync非同期可能かどうかを試みます\r\n"
@@ -96,6 +97,7 @@
 #define TH_JP_DBG_SOUNDPLAYER_BGM_THREAD_TERMINATED "atention : ストリーミング用スレッドは終了しました。\r\n"
 
 // EN
+#define TH_EN_WINDOW_TITLE "Touhou Eiyashou ~ Imperishable Night. ver 1.00d"
 #define TH_EN_DBG_SCREEN_INIT_32BITS "First run, using 32-bit textures\r\n"
 #define TH_EN_DBG_SET_REFRESH_RATE_60HZ "Attempting to change refresh rate to 60Hz...\r\n"
 #define TH_EN_DBG_TRY_ASYNC_VSYNC "Testing whether async vsync is possible...\r\n"
@@ -191,6 +193,7 @@
 
 #define TH_MAKE_LANG_STR(lang, id) TH_CONCAT_HELPER(lang, id)
 
+#define TH_WINDOW_TITLE TH_MAKE_LANG_STR(TH_LANG, _WINDOW_TITLE)
 #define TH_DBG_SCREEN_INIT_32BITS TH_MAKE_LANG_STR(TH_LANG, _DBG_SCREEN_INIT_32BITS)
 #define TH_DBG_SET_REFRESH_RATE_60HZ TH_MAKE_LANG_STR(TH_LANG, _DBG_SET_REFRESH_RATE_60HZ)
 #define TH_DBG_TRY_ASYNC_VSYNC TH_MAKE_LANG_STR(TH_LANG, _DBG_TRY_ASYNC_VSYNC)
