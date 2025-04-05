@@ -5,6 +5,9 @@
 #include "inttypes.hpp"
 #include "utils.hpp"
 
+#define GAME_WINDOW_WIDTH 640
+#define GAME_WINDOW_HEIGHT 480
+
 namespace th08
 {
 struct VertexDiffuseXyzrhw

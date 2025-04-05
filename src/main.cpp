@@ -11,10 +11,12 @@
 #include "i18n.hpp"
 #include "inttypes.hpp"
 #include "Global.hpp"
+#include "ScreenEffect.hpp"
 #include "Supervisor.hpp" // Official name: mother.hpp
 #include "SprtCtrl.hpp"
 #include "ZunBool.hpp"
 #include "ZunColor.hpp"
+#include "ZunMath.hpp"
 #include "ZunResult.hpp"
 
 namespace th08
@@ -73,6 +75,238 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+#pragma var_order(failedToSetFramerate, usingHardwareRenderer, displayMode, presentParams, cameraDistance, halfHeight, halfWidth, aspectRatio, fov, capabilitiesBuf)
+ZunBool GameWindow::InitD3DRendering()
+{
+    f32 aspectRatio;
+    f32 cameraDistance;
+    char capabilitiesBuf[0x2000];
+    D3DDISPLAYMODE displayMode;
+    ZunBool failedToSetFramerate;
+    f32 fov;
+    f32 halfHeight;
+    f32 halfWidth;
+    D3DPRESENT_PARAMETERS presentParams;
+    u8 usingHardwareRenderer;
+
+    usingHardwareRenderer = true;
+
+    memset(&presentParams, 0, sizeof(presentParams));
+
+    g_Supervisor.m_D3dIface->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode);
+    if (!g_Supervisor.m_Cfg.windowed)
+    {
+        if (g_Supervisor.Is16bitColorMode() == true)
+        {
+            presentParams.BackBufferFormat = D3DFMT_R5G6B5;
+            g_Supervisor.m_Cfg.colorMode16bit = 1;
+        }
+        // Used in cases of corrupt or missing config files in earlier games. Dead code in IN
+        else if (g_Supervisor.m_Cfg.colorMode16bit == 0xff)
+        {
+            presentParams.BackBufferFormat = D3DFMT_X8R8G8B8;
+            g_Supervisor.m_Cfg.colorMode16bit = 0;
+            g_GameErrorContext.Log(TH_DBG_SCREEN_INIT_32BITS);
+        }
+        else if (g_Supervisor.m_Cfg.colorMode16bit == 0)
+        {
+            presentParams.BackBufferFormat = D3DFMT_X8R8G8B8;
+        }
+        else
+        {
+            presentParams.BackBufferFormat = D3DFMT_R5G6B5;
+        }
+
+        // ?????? Not sure why this is here
+        if (g_GameWindow.m_UsesRelativePath)
+        {
+            g_Supervisor.m_DisableVsync = true;
+        }
+
+        if (!g_Supervisor.m_DisableVsync)
+        {
+            presentParams.FullScreen_RefreshRateInHz = 60;
+            presentParams.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+            g_GameErrorContext.Log(TH_DBG_SET_REFRESH_RATE_60HZ);
+
+            if (g_Supervisor.m_Cfg.frameskipConfig == 0)
+            {
+                presentParams.SwapEffect = D3DSWAPEFFECT_FLIP;
+            }
+            else
+            {
+                presentParams.SwapEffect = D3DSWAPEFFECT_COPY_VSYNC;
+            }
+        }
+        else
+        {
+            presentParams.FullScreen_RefreshRateInHz = 0;
+            presentParams.SwapEffect = D3DSWAPEFFECT_COPY;
+            presentParams.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+            g_GameErrorContext.Log(TH_DBG_TRY_ASYNC_VSYNC);
+        }   
+    }
+    else
+    {
+        presentParams.BackBufferFormat = displayMode.Format;
+        presentParams.SwapEffect = D3DSWAPEFFECT_COPY;
+        presentParams.Windowed = TRUE;
+    }
+
+    presentParams.BackBufferWidth = GAME_WINDOW_WIDTH;
+    presentParams.BackBufferHeight = GAME_WINDOW_HEIGHT;
+    presentParams.EnableAutoDepthStencil = TRUE;
+    presentParams.AutoDepthStencilFormat = D3DFMT_D16;
+    presentParams.Flags = D3DPRESENTFLAG_LOCKABLE_BACKBUFFER;
+
+    g_Supervisor.m_Flags.unk1 = true;
+    g_Supervisor.m_CouldSetRefreshRate = true;
+    failedToSetFramerate = false;
+
+    for (;;)
+    {
+        if (g_Supervisor.IsReferenceRasterizerMode())
+        {
+            goto REFERENCE_RASTERIZER_MODE;
+        }
+        else
+        {
+            
+            if (g_Supervisor.m_D3dIface->CreateDevice(0, D3DDEVTYPE_HAL, g_GameWindow.m_Window,
+                                                    D3DCREATE_HARDWARE_VERTEXPROCESSING, &presentParams,
+                                                    &g_Supervisor.m_D3dDevice) < 0)
+            {
+                if (failedToSetFramerate)
+                {
+                    g_GameErrorContext.Log(TH_DBG_TL_HAL_UNAVAILABLE);
+                }
+                
+                if (g_Supervisor.m_D3dIface->CreateDevice(0, D3DDEVTYPE_HAL, g_GameWindow.m_Window,
+                                                        D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams,
+                                                        &g_Supervisor.m_D3dDevice) < 0)
+                {
+                    if (failedToSetFramerate)
+                    {
+                        g_GameErrorContext.Log(TH_DBG_HAL_UNAVAILABLE);
+                    }
+
+                REFERENCE_RASTERIZER_MODE:
+                    if (g_Supervisor.m_D3dIface->CreateDevice(0, D3DDEVTYPE_REF, g_GameWindow.m_Window,
+                                                            D3DCREATE_SOFTWARE_VERTEXPROCESSING, &presentParams,
+                                                            &g_Supervisor.m_D3dDevice) < 0)
+                    {
+                        if (!g_Supervisor.m_DisableVsync)
+                        {
+                            g_GameErrorContext.Log(TH_DBG_CANT_SET_REFRESH_RATE);
+                            presentParams.FullScreen_RefreshRateInHz = D3DPRESENT_RATE_DEFAULT;
+                            g_Supervisor.m_CouldSetRefreshRate = false;
+                            failedToSetFramerate = true;
+
+                            continue;
+                        }
+                        else
+                        {
+                            if (presentParams.FullScreen_PresentationInterval == D3DPRESENT_INTERVAL_IMMEDIATE)
+                            {
+                                g_GameErrorContext.Log(TH_ERR_ASYNC_VSYNC_UNSUPPORTED);
+                                g_GameErrorContext.Log(TH_ERR_CHANGE_REFRESH_RATE);
+                                presentParams.FullScreen_PresentationInterval = D3DPRESENT_INTERVAL_ONE;
+                                presentParams.SwapEffect = D3DSWAPEFFECT_COPY;
+
+                                continue;
+                            }
+                            else
+                            {
+                                g_GameErrorContext.Log(TH_ERR_D3D_INIT_FAILED);
+                            
+                                if (g_Supervisor.m_D3dIface != NULL)
+                                {
+                                    g_Supervisor.m_D3dIface->Release();
+                                    g_Supervisor.m_D3dIface = NULL;
+                                }
+
+                                return true;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        g_GameErrorContext.Log(TH_DBG_USING_REF_MODE);
+                        g_Supervisor.m_Flags.usingHardwareTL = false;
+                        usingHardwareRenderer = false;
+                    }
+                }
+                else
+                {
+                    g_GameErrorContext.Log(TH_DBG_USING_HAL_MODE);
+                    g_Supervisor.m_Flags.usingHardwareTL = false;
+                }
+            }
+            else
+            {
+                g_GameErrorContext.Log(TH_DBG_USING_TL_HAL_MODE);
+                g_Supervisor.m_Flags.usingHardwareTL = true;
+            }
+
+            break;
+        }
+    }
+
+    memcpy(&g_Supervisor.m_PresentParameters, &presentParams, sizeof(presentParams));
+
+    halfWidth = GAME_WINDOW_WIDTH / 2.0f;
+    halfHeight = GAME_WINDOW_HEIGHT / 2.0f;
+    aspectRatio = (f32) GAME_WINDOW_WIDTH / (f32) GAME_WINDOW_HEIGHT;
+    fov = ZUN_PI / 6;
+    cameraDistance = halfHeight / ZUN_TAN(fov / 2.0f);
+
+    D3DXMatrixLookAtLH(&g_Supervisor.m_ViewMatrix, &D3DXVECTOR3(halfWidth, -halfHeight, -cameraDistance), 
+                    &D3DXVECTOR3(halfWidth, -halfHeight, 0.0f), &D3DXVECTOR3(0.0f, 1.0f, 0.0f));
+    D3DXMatrixPerspectiveFovLH(&g_Supervisor.m_ProjectionMatrix, fov, aspectRatio, 100.0f, 10000.0f);
+    g_Supervisor.m_D3dDevice->SetTransform(D3DTS_VIEW, &g_Supervisor.m_ViewMatrix);
+    g_Supervisor.m_D3dDevice->SetTransform(D3DTS_PROJECTION, &g_Supervisor.m_ProjectionMatrix);
+    g_Supervisor.m_D3dDevice->GetViewport(&g_Supervisor.m_Viewport);
+    g_Supervisor.m_D3dDevice->GetDeviceCaps(&g_Supervisor.m_D3dCaps);
+
+    // This is dead code because from PCB onwards the bit that indicated software texture blending in EoSD
+    //   is set true unconditionally in the config load function and then ignored (HW blending is always used)
+    //   Therefore IsHardwareBlendingDisabled will always return true here
+    if (!g_Supervisor.IsHardwareBlendingDisabled() && !(g_Supervisor.m_D3dCaps.TextureOpCaps & D3DTEXOPCAPS_ADD))
+    {
+        g_GameErrorContext.Log(TH_ERR_NO_SUPPORT_FOR_D3DTEXOPCAPS_ADD);
+        g_Supervisor.m_Cfg.opts.useSwTextureBlending = true;
+    }
+
+    if (g_Supervisor.m_D3dCaps.MaxTextureWidth <= 256)
+    {
+        g_GameErrorContext.Log(TH_ERR_NO_LARGE_TEXTURE_SUPPORT);
+    }
+
+    FormatD3DCapabilities(&g_Supervisor.m_D3dCaps, capabilitiesBuf);
+    g_GameErrorContext.Log(capabilitiesBuf);
+
+    if (!g_Supervisor.Is16bitColorMode() && usingHardwareRenderer)
+    {
+        if (g_Supervisor.m_D3dIface->CheckDeviceFormat(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, presentParams.BackBufferFormat, 
+                                                        0, D3DRTYPE_TEXTURE, D3DFMT_A8R8G8B8) == D3D_OK)
+        {
+            g_Supervisor.m_Flags.using32BitGraphics = true;
+        }
+        else
+        {
+            g_Supervisor.m_Flags.using32BitGraphics = false;
+            g_Supervisor.m_Cfg.opts.force16bitTextures = true;
+            g_GameErrorContext.Log(TH_ERR_D3DFMT_A8R8G8B8_UNSUPPORTED);
+        }
+    }
+
+    ResetRenderState();
+    ScreenEffect::SetViewPort(COLOR_BLACK);
+    g_GameWindow.m_WindowIsClosing = false;
+    g_Supervisor.m_LastFrameTime = 0;
+    return false;
 }
 
 void GameWindow::FormatD3DCapabilities(D3DCAPS8 *caps, char *buf)
@@ -316,11 +550,11 @@ ZunResult GameWindow::CheckForRunningGameInstance(HINSTANCE hInstance)
             }
         }
 
-        g_Supervisor.m_Flags &= 0xffffffbf;
+        g_Supervisor.m_Flags.unk6 = false;
     }
     else
     {
-        g_Supervisor.m_Flags |= 0x00000040;
+        g_Supervisor.m_Flags.unk6 = true;
     }
 
     if (g_ExclusiveMutex == NULL)

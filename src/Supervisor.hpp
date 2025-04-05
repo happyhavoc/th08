@@ -53,7 +53,7 @@ enum EffectQuality
 
 struct GameConfigOpts
 {
-    u32 useD3dHwTextureBlending : 1;
+    u32 useSwTextureBlending : 1;
     u32 dontUseVertexBuf : 1;
     u32 force16bitTextures : 1;
     u32 clearBackBufferOnRefresh : 1;
@@ -95,6 +95,17 @@ struct GameConfiguration
     GameConfigOpts opts;
 };
 
+struct SupervisorFlags
+{
+    u32 usingHardwareTL : 1;
+    u32 unk1 : 1; // Unconditionally set in InitD3DRendering. Never cleared?
+    u32 using32BitGraphics : 1;
+    u32 unk3 : 1;
+    u32 unk4 : 1;
+    u32 unk5 : 1;
+    u32 unk6 : 1; // Set if LPTITLE is NULL in the startup info, which seems to never be true?
+};
+
 struct Supervisor
 {
     ZunResult LoadConfig(char *configFile);
@@ -111,9 +122,9 @@ struct Supervisor
         return this->m_Cfg.opts.displayMinimumGraphics | this->m_Cfg.opts.clearBackBufferOnRefresh;
     }
 
-    ZunBool IsHardwareBlendingEnabled()
+    ZunBool IsHardwareBlendingDisabled()
     {
-        return m_Cfg.opts.useD3dHwTextureBlending;
+        return m_Cfg.opts.useSwTextureBlending;
     }
 
     ZunBool IsVertexBufferDisabled()
@@ -192,11 +203,12 @@ struct Supervisor
     u32 unk174;
     unknown_fields(0x178, 0x4);
     BOOL m_DisableVsync;
-    unknown_fields(0x180, 0x8);
+    ZunBool m_CouldSetRefreshRate;
+    i32 m_LastFrameTime; // Unused in IN
     f32 framerateMultiplier;
     MidiOutput *midiOutput;
     unknown_fields(0x190, 0x14);
-    u32 m_Flags;
+    SupervisorFlags m_Flags;
     DWORD m_TotalPlayTime;
     DWORD m_SystemTime;
     D3DCAPS8 m_D3dCaps;

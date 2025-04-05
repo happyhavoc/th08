@@ -3,6 +3,7 @@
 #include "Background.hpp"
 #include "Global.hpp"
 #include "Midi.hpp"
+#include "ScreenEffect.hpp"
 #include "SoundPlayer.hpp"
 #include "SprtCtrl.hpp"
 #include "Supervisor.hpp"

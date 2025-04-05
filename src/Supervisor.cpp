@@ -96,7 +96,7 @@ ZunResult Supervisor::LoadConfig(char *configFile)
         g_ControllerMapping = g_Supervisor.m_Cfg.controllerMapping;
     }
 
-    g_Supervisor.m_Cfg.opts.useD3dHwTextureBlending = true;
+    g_Supervisor.m_Cfg.opts.useSwTextureBlending = true; // Bit ignored from PCB onwards (HW blending always used)
     if (this->m_Cfg.opts.dontUseVertexBuf != false)
     {
         g_GameErrorContext.Log(TH_ERR_NO_VERTEX_BUFFER);

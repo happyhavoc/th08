@@ -3,6 +3,21 @@
 #define TH_LANG TH_JP
 
 // JP
+#define TH_JP_DBG_SCREEN_INIT_32BITS "初回起動、画面を 32Bits で初期化しました\r\n"
+#define TH_JP_DBG_SET_REFRESH_RATE_60HZ "リフレッシュレートを60Hzに変更を試みます\r\n"
+#define TH_JP_DBG_TRY_ASYNC_VSYNC "VSync非同期可能かどうかを試みます\r\n"
+#define TH_JP_DBG_USING_TL_HAL_MODE "T&L HAL で動作しま〜す\r\n"
+#define TH_JP_DBG_TL_HAL_UNAVAILABLE "T&L HAL は使用できないようです\r\n"
+#define TH_JP_DBG_HAL_UNAVAILABLE "HAL も使用できないようです\r\n"
+#define TH_JP_DBG_USING_HAL_MODE "HAL で動作します\r\n"
+#define TH_JP_ERR_NO_SUPPORT_FOR_D3DTEXOPCAPS_ADD "D3DTEXOPCAPS_ADD をサポートしていません、色加算エミュレートモードで動作します\r\n"
+#define TH_JP_ERR_NO_LARGE_TEXTURE_SUPPORT "512 以上のテクスチャをサポートしていません。殆どの絵がボケて表示されます。\r\n"
+#define TH_JP_ERR_D3DFMT_A8R8G8B8_UNSUPPORTED "D3DFMT_A8R8G8B8 をサポートしていません、減色モードで動作します\r\n"
+#define TH_JP_DBG_USING_REF_MODE "REF で動作しますが、重すぎて恐らくゲームになりません...\r\n"
+#define TH_JP_DBG_CANT_SET_REFRESH_RATE "リフレッシュレートが変更できません\r\n"
+#define TH_JP_ERR_D3D_INIT_FAILED "Direct3D の初期化に失敗、これではゲームは出来ません\r\n"
+#define TH_JP_ERR_ASYNC_VSYNC_UNSUPPORTED "非同期更新も行えません。一番汚いモードに変更します\r\n"
+#define TH_JP_ERR_CHANGE_REFRESH_RATE "*** リフレッシュレートを60Hzに変更することを推奨します ***\r\n"
 #define TH_JP_DBG_D3D_CAPS_START "現在のビデオカード、及びドライバの能力詳細\r\n"
 #define TH_JP_DBG_CAPS_READ_SCANLINE "　走査線取得能力 : "
 #define TH_JP_DBG_CAPS_WINDOW_MODE_RENDERING "　ウィンドウモードのレンダリング : "
@@ -81,6 +96,21 @@
 #define TH_JP_DBG_SOUNDPLAYER_BGM_THREAD_TERMINATED "atention : ストリーミング用スレッドは終了しました。\r\n"
 
 // EN
+#define TH_EN_DBG_SCREEN_INIT_32BITS "First run, using 32-bit textures\r\n"
+#define TH_EN_DBG_SET_REFRESH_RATE_60HZ "Attempting to change refresh rate to 60Hz...\r\n"
+#define TH_EN_DBG_TRY_ASYNC_VSYNC "Testing whether async vsync is possible...\r\n"
+#define TH_EN_DBG_USING_TL_HAL_MODE "Using T&L HAL!\r\n"
+#define TH_EN_DBG_TL_HAL_UNAVAILABLE "T&L HAL does not seem to be usable\r\n"
+#define TH_EN_DBG_HAL_UNAVAILABLE "HAL isn't usable either\r\n"
+#define TH_EN_DBG_USING_HAL_MODE "Using HAL\r\n"
+#define TH_EN_ERR_NO_SUPPORT_FOR_D3DTEXOPCAPS_ADD "D3DTEXOPCAPS_ADD isn't supported, using emulated blend mode...\r\n"
+#define TH_EN_ERR_NO_LARGE_TEXTURE_SUPPORT "Textures greater than 512 texels are unsupported. Expect textures to be blurred.\r\n"
+#define TH_EN_ERR_D3DFMT_A8R8G8B8_UNSUPPORTED "D3DFMT_A8R8G8B8 isn't supported, using low-color mode...\r\n"
+#define TH_EN_DBG_USING_REF_MODE "Using REF renderer, but it might become too heavy for the game...\r\n"
+#define TH_EN_DBG_CANT_SET_REFRESH_RATE "Can't set refresh rate\r\n"
+#define TH_EN_ERR_D3D_INIT_FAILED "Direct3D initialization failed, the game cannot be played.\r\n"
+#define TH_EN_ERR_ASYNC_VSYNC_UNSUPPORTED "Can't do async vsync. Switching to the worst mode...\r\n"
+#define TH_EN_ERR_CHANGE_REFRESH_RATE "*** You should change your refresh rate to 60Hz ***\r\n"
 #define TH_EN_DBG_D3D_CAPS_START "Current video card and driver capabilities\r\n"
 #define TH_EN_DBG_CAPS_READ_SCANLINE "  Get current scanline: "
 #define TH_EN_DBG_CAPS_WINDOW_MODE_RENDERING "  Render in windowed mode: "
@@ -161,7 +191,21 @@
 
 #define TH_MAKE_LANG_STR(lang, id) TH_CONCAT_HELPER(lang, id)
 
-
+#define TH_DBG_SCREEN_INIT_32BITS TH_MAKE_LANG_STR(TH_LANG, _DBG_SCREEN_INIT_32BITS)
+#define TH_DBG_SET_REFRESH_RATE_60HZ TH_MAKE_LANG_STR(TH_LANG, _DBG_SET_REFRESH_RATE_60HZ)
+#define TH_DBG_TRY_ASYNC_VSYNC TH_MAKE_LANG_STR(TH_LANG, _DBG_TRY_ASYNC_VSYNC)
+#define TH_DBG_USING_TL_HAL_MODE TH_MAKE_LANG_STR(TH_LANG, _DBG_USING_TL_HAL_MODE)
+#define TH_DBG_TL_HAL_UNAVAILABLE TH_MAKE_LANG_STR(TH_LANG, _DBG_TL_HAL_UNAVAILABLE)
+#define TH_DBG_HAL_UNAVAILABLE TH_MAKE_LANG_STR(TH_LANG, _DBG_HAL_UNAVAILABLE)
+#define TH_DBG_USING_HAL_MODE TH_MAKE_LANG_STR(TH_LANG, _DBG_USING_HAL_MODE)
+#define TH_ERR_NO_SUPPORT_FOR_D3DTEXOPCAPS_ADD TH_MAKE_LANG_STR(TH_LANG, _ERR_NO_SUPPORT_FOR_D3DTEXOPCAPS_ADD)
+#define TH_ERR_NO_LARGE_TEXTURE_SUPPORT TH_MAKE_LANG_STR(TH_LANG, _ERR_NO_LARGE_TEXTURE_SUPPORT)
+#define TH_ERR_D3DFMT_A8R8G8B8_UNSUPPORTED TH_MAKE_LANG_STR(TH_LANG, _ERR_D3DFMT_A8R8G8B8_UNSUPPORTED)
+#define TH_DBG_USING_REF_MODE TH_MAKE_LANG_STR(TH_LANG, _DBG_USING_REF_MODE)
+#define TH_DBG_CANT_SET_REFRESH_RATE TH_MAKE_LANG_STR(TH_LANG, _DBG_CANT_SET_REFRESH_RATE)
+#define TH_ERR_D3D_INIT_FAILED TH_MAKE_LANG_STR(TH_LANG, _ERR_D3D_INIT_FAILED)
+#define TH_ERR_ASYNC_VSYNC_UNSUPPORTED TH_MAKE_LANG_STR(TH_LANG, _ERR_ASYNC_VSYNC_UNSUPPORTED)
+#define TH_ERR_CHANGE_REFRESH_RATE TH_MAKE_LANG_STR(TH_LANG, _ERR_CHANGE_REFRESH_RATE)
 #define TH_DBG_D3D_CAPS_START TH_MAKE_LANG_STR(TH_LANG, _DBG_D3D_CAPS_START)
 #define TH_DBG_CAPS_READ_SCANLINE TH_MAKE_LANG_STR(TH_LANG, _DBG_CAPS_READ_SCANLINE)
 #define TH_DBG_CAPS_WINDOW_MODE_RENDERING TH_MAKE_LANG_STR(TH_LANG, _DBG_CAPS_WINDOW_MODE_RENDERING)
