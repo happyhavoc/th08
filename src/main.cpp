@@ -77,6 +77,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine
     return 0;
 }
 
+ZunBool GameWindow::InitD3DInterface()
+{
+    g_Supervisor.m_D3dIface = Direct3DCreate8(D3D_SDK_VERSION);
+
+    if (g_Supervisor.m_D3dIface == NULL)
+    {
+        g_GameErrorContext.Log(TH_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ);
+        return true;
+    }
+
+    return false;
+}
+
+#pragma var_order(height, width, baseClass)
 ZunBool GameWindow::CreateGameWindow(HINSTANCE hInstance)
 {
     WNDCLASS baseClass;
