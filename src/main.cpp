@@ -54,7 +54,7 @@ struct GameWindow
     f64 GetTimestamp();
     static ZunBool InitD3DInterface();
     static ZunBool CreateGameWindow(HINSTANCE hInstance);
-    static LRESULT WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+    static LRESULT __stdcall WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
     static ZunBool InitD3DRendering();
     static void FormatD3DCapabilities(D3DCAPS8 *caps, char *buf);
     static char *FormatCapability(char *capabilityName, u32 capabilityFlags, u32 mask, char *buf);
@@ -75,6 +75,61 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+LRESULT __stdcall GameWindow::WindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+    switch (uMsg)
+    {
+        case WM_ERASEBKGND:
+            return 1; // Indicates that IN can erase the background
+        case 0x3c9:
+            if (g_Supervisor.midiOutput != NULL)
+            {
+                g_Supervisor.midiOutput->UnprepareHeader((LPMIDIHDR) lParam);
+            }
+
+            break;
+        case WM_ACTIVATEAPP:
+            g_GameWindow.m_WindowIsActive = wParam;
+
+            if (g_GameWindow.m_WindowIsActive)
+            {
+                g_GameWindow.m_WindowIsInactive = false;
+            }
+            else
+            {
+                g_GameWindow.m_WindowIsInactive = true;
+            }
+
+            break;
+        case WM_SETCURSOR:
+            if (!g_Supervisor.IsWindowed())
+            {
+                if (g_GameWindow.m_WindowIsInactive)
+                {
+                    SetCursor(LoadCursorA(NULL, IDC_ARROW));
+                    ShowCursor(TRUE);
+                }
+                else
+                {
+                    ShowCursor(NULL);
+                    SetCursor(NULL);
+                }
+            }
+            else
+            {
+                SetCursor(LoadCursorA(NULL, IDC_ARROW));
+                ShowCursor(TRUE);
+            }
+
+            return TRUE;
+        case WM_CLOSE:
+            g_Supervisor.m_Flags.receivedCloseMsg = true;
+            return 1;
+    }
+
+    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
 }
 
 #pragma var_order(failedToSetFramerate, usingHardwareRenderer, displayMode, presentParams, cameraDistance, halfHeight, halfWidth, aspectRatio, fov, capabilitiesBuf)

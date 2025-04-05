@@ -3,5 +3,4 @@ th08::GameWindow::Present
 th08::GameWindow::GetTimestamp
 th08::GameWindow::InitD3DInterface
 th08::GameWindow::CreateGameWindow
-th08::GameWindow::WindowProc
 ScreenEffect::SetViewport

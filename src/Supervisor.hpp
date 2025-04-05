@@ -104,6 +104,7 @@ struct SupervisorFlags
     u32 unk4 : 1;
     u32 unk5 : 1;
     u32 unk6 : 1; // Set if LPTITLE is NULL in the startup info, which seems to never be true?
+    u32 receivedCloseMsg : 1;
 };
 
 struct Supervisor
