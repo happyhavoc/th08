@@ -1,4 +1,3 @@
 th08::GameWindow::Render
 th08::GameWindow::Present
-th08::GameWindow::GetTimestamp
 ScreenEffect::SetViewport

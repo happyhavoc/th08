@@ -77,6 +77,25 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine
     return 0;
 }
 
+#pragma var_order(performanceCounterValue, timestamp)
+f64 GameWindow::GetTimestamp()
+{
+    LARGE_INTEGER performanceCounterValue;
+    f64 timestamp;
+
+    if (g_GameWindow.m_PCFrequency.LowPart != 0)
+    {
+        QueryPerformanceCounter(&performanceCounterValue);
+        return (f64) performanceCounterValue.LowPart / (f64) g_GameWindow.m_PCFrequency.LowPart;
+    }
+
+    timeBeginPeriod(1);
+    timestamp = timeGetTime();
+    timeEndPeriod(1);
+
+    return timestamp;
+}
+
 ZunBool GameWindow::InitD3DInterface()
 {
     g_Supervisor.m_D3dIface = Direct3DCreate8(D3D_SDK_VERSION);
