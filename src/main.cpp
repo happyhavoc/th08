@@ -15,6 +15,7 @@
 #include "Global.hpp"
 #include "ScreenEffect.hpp"
 #include "Supervisor.hpp" // Official name: mother.hpp
+#include "SoundPlayer.hpp"
 #include "SprtCtrl.hpp"
 #include "ZunBool.hpp"
 #include "ZunColor.hpp"
@@ -26,7 +27,7 @@ namespace th08
 enum RenderResult {
     RENDER_RESULT_KEEP_RUNNING = 0,
     RENDER_RESULT_EXIT_SUCCESS = 1,
-    RENDER_RESULT_EXIST_ERROR = 2
+    RENDER_RESULT_EXIT_ERROR = 2
 };
 
 // MSVC tries to align 64-bit types even on 32-bit builds, so the pack is required
@@ -77,6 +78,77 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+RenderResult GameWindow::Render()
+{
+    i32 calcChainResult;
+
+    m_CurTimestamp = this->GetTimestamp();
+
+    // Safeguard in case of timestamp overflow or other weirdness
+    if (m_LastTimestamp > m_CurTimestamp)
+    {
+        m_LastFrameTime = m_CurTimestamp;
+    }
+
+    m_LastTimestamp = m_CurTimestamp;
+
+    if (m_LastFrameTime < m_CurTimestamp)
+    {
+
+        while (m_LastFrameTime < m_CurTimestamp)
+        {
+            m_LastFrameTime += (1.0f / 60);
+        }
+
+        g_SprtCtrl->FlushVertexBuffer();
+
+        g_Supervisor.m_Viewport.X = 0;
+        g_Supervisor.m_Viewport.Y = 0;
+        g_Supervisor.m_Viewport.Width = GAME_WINDOW_WIDTH;
+        g_Supervisor.m_Viewport.Height = GAME_WINDOW_HEIGHT;
+
+        g_Supervisor.m_D3dDevice->SetViewport(&g_Supervisor.m_Viewport);
+
+        calcChainResult = g_Chain.RunCalcChain();
+        g_SoundPlayer.ProcessQueues();
+
+        if (calcChainResult == 0)
+        {
+            g_Supervisor.ThreadClose();
+            return RENDER_RESULT_EXIT_SUCCESS;
+        }
+        else if (calcChainResult == -1)
+        {
+            g_Supervisor.ThreadClose();
+            return RENDER_RESULT_EXIT_ERROR;
+        }
+
+        m_FramesSinceRedraw++;
+
+        if (g_Supervisor.m_Cfg.frameskipConfig <= m_FramesSinceRedraw)
+        {
+            g_Supervisor.m_D3dDevice->BeginScene();
+            g_SprtCtrl->ClearVertexBuffer();
+            g_Supervisor.m_FogState = FOG_UNSET;
+            g_Supervisor.DisableFog();
+            g_Chain.RunDrawChain();
+            g_SprtCtrl->FlushVertexBuffer();
+            g_Supervisor.m_D3dDevice->SetTexture(0, NULL);
+            g_Supervisor.m_D3dDevice->EndScene();
+            m_FramesSinceRedraw = 0;
+        }
+
+        m_CurTimestamp = this->GetTimestamp();
+        Present();
+    }
+    else
+    {
+        Sleep(0);
+    }
+
+    return RENDER_RESULT_KEEP_RUNNING;
 }
 
 #pragma var_order(i, snapshotPath)

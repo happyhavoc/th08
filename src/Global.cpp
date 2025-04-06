@@ -11,6 +11,7 @@ DIFFABLE_STATIC(Rng, g_Rng)
 DIFFABLE_STATIC(u16, g_CurFrameInput);
 DIFFABLE_STATIC(u16, g_LastFrameInput);
 DIFFABLE_STATIC(GameErrorContext, g_GameErrorContext)
+DIFFABLE_STATIC(Chain, g_Chain);
 DIFFABLE_STATIC(PbgArchive, g_PbgArchive)
 DIFFABLE_STATIC(ZunMemory, g_ZunMemory)
 DIFFABLE_STATIC(JOYCAPSA, g_JoystickCaps)

@@ -128,6 +128,9 @@ struct SprtCtrl
     void CaptureToTexture (i32 captureAnmIdx, i32 srcX, i32 srcY, i32 srcW, i32 srcH, i32 dstX, i32 dstY, i32 dstW, i32 dstH);
     void CaptureToSurface (i32 captureSurfaceIdx, i32 srcX, i32 srcY, i32 srcW, i32 srcH, i32 dstX, i32 dstY, i32 dstW, i32 dstH);
 
+    void ClearVertexBuffer();
+    void FlushVertexBuffer();
+
     unknown_fields(0x0, 0x8);
     i32 m_CaptureSurfaceIdx;
     unknown_fields(0xc, 0x1c18);
@@ -155,9 +158,9 @@ struct SprtCtrl
     unknown_fields(0x24cc, 4);
     VertexDiffuseXyzrhw m_UntexturedVector[4];
     u32 m_SpritesToDraw;
-    VertexTex1DiffuseXyzrhw m_TexturedVector[0x18000];
-    VertexTex1DiffuseXyzrhw *m_DrawBufferEndPtr;
-    VertexTex1DiffuseXyzrhw *m_DrawBufferStartPtr;
+    VertexTex1DiffuseXyzrhw m_VertexBuffer[0x18000];
+    VertexTex1DiffuseXyzrhw *m_VertexBufferEndPtr;
+    VertexTex1DiffuseXyzrhw *m_VertexBufferStartPtr;
     i32 m_CaptureAnmIdx;
     i32 m_TextureCaptureSrcX;
     i32 m_TextureCaptureSrcY;

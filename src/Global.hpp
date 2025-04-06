@@ -286,6 +286,7 @@ DIFFABLE_EXTERN(Rng, g_Rng);
 DIFFABLE_EXTERN(u16, g_CurFrameInput);
 DIFFABLE_EXTERN(u16, g_LastFrameInput);
 DIFFABLE_EXTERN(GameErrorContext, g_GameErrorContext);
+DIFFABLE_EXTERN(Chain, g_Chain);
 DIFFABLE_EXTERN(PbgArchive, g_PbgArchive);
 DIFFABLE_EXTERN(ZunMemory, g_ZunMemory);
 DIFFABLE_EXTERN(ControllerMapping, g_ControllerMapping);

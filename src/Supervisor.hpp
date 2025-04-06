@@ -51,6 +51,13 @@ enum EffectQuality
     MAXIMUM
 };
 
+enum FogState
+{
+    FOG_DISABLED = 0,
+    FOG_ENABLED = 1,
+    FOG_UNSET = 0xff
+};
+
 struct GameConfigOpts
 {
     u32 useSwTextureBlending : 1;
@@ -113,6 +120,7 @@ struct Supervisor
     void ThreadClose();
     void InitializeCriticalSections();
     ZunBool TakeSnapshot(char *filePath);
+    u32 DisableFog();
 
     u32 IsShotSlowEnabled()
     {
@@ -223,8 +231,9 @@ struct Supervisor
     u8 m_LockCounts[4];
     DWORD unk2fc;
 
-    unknown_fields(0x300, 0x54);
+    unknown_fields(0x300, 0x50);
 
+    FogState m_FogState;
     u32 m_ExeChecksum;
     u32 m_ExeSize;
 

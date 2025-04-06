@@ -1,5 +1,9 @@
-th08::GameWindow::Render
+th08::Supervisor::DisableFog
 th08::Supervisor::TakeSnapshot
+th08::Supervisor::ThreadClose
 th08::ScreenEffect::SetViewport
 th08::SprtCtrl::CaptureToSurface
 th08::SprtCtrl::CaptureToTexture
+th08::SprtCtrl::ClearVertexBuffer
+th08::SprtCtrl::FlushVertexBuffer
+
