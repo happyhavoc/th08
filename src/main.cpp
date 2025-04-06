@@ -1,6 +1,7 @@
 #define _WIN32_WINNT 0x0500
 
 #include <d3dx8.h>
+#include <direct.h>
 #include <shobjidl.h>
 #include <shlguid.h>
 #include <stdio.h>
@@ -8,6 +9,7 @@
 #include <windows.h>
 #include "Background.hpp"
 #include "diffbuild.hpp"
+#include "GameManager.hpp"
 #include "i18n.hpp"
 #include "inttypes.hpp"
 #include "Global.hpp"
@@ -75,6 +77,49 @@ using namespace th08;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
     return 0;
+}
+
+#pragma var_order(i, snapshotPath)
+void GameWindow::Present()
+{
+    i32 i;
+    char snapshotPath[0x100];
+
+    if (g_Supervisor.m_D3dDevice->Present(NULL, NULL, NULL, NULL) < 0)
+    {
+        g_SprtCtrl->ReleaseSurfaces();
+        g_Supervisor.m_D3dDevice->Reset(&g_Supervisor.m_PresentParameters);
+        ResetRenderState();
+
+        g_Supervisor.m_Unk174 = 2;
+    }
+
+    g_SprtCtrl->TakeScreencaptures();
+
+    if (WAS_PRESSED(TH_BUTTON_HOME))
+    {
+        _mkdir("snapshot");
+
+        for (i = 0; i < 1000; i++)
+        {
+            sprintf(snapshotPath, "snapshot/th%.3d.bmp", i);
+
+            if (!FileSystem::CheckIfFileAlreadyExists(snapshotPath))
+            {
+                break;
+            }
+        }
+
+        if (i < 1000)
+        {
+            g_Supervisor.TakeSnapshot(snapshotPath);
+        }
+    }
+
+    if (g_Supervisor.m_Unk174 != 0 && !g_GameManager.m_IsInGameMenu)
+    {
+        g_Supervisor.m_Unk174--;
+    }
 }
 
 #pragma var_order(performanceCounterValue, timestamp)
@@ -436,7 +481,7 @@ ZunBool GameWindow::InitD3DRendering()
     }
 
     ResetRenderState();
-    ScreenEffect::SetViewPort(COLOR_BLACK);
+    ScreenEffect::SetViewport(COLOR_BLACK);
     g_GameWindow.m_WindowIsClosing = false;
     g_Supervisor.m_LastFrameTime = 0;
     return false;

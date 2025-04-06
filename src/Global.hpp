@@ -9,6 +9,10 @@
 
 namespace th08
 {
+
+#define IS_PRESSED(key) (g_CurFrameInput & (key))
+#define WAS_PRESSED(key) (((g_CurFrameInput & (key)) != 0) && (g_CurFrameInput & (key)) != (g_LastFrameInput & (key)))
+
 enum ChainCallbackResult
 {
     CHAIN_CALLBACK_RESULT_CONTINUE_AND_REMOVE_JOB = (unsigned int)0,
@@ -279,6 +283,8 @@ class ZunMemory
 };
 
 DIFFABLE_EXTERN(Rng, g_Rng);
+DIFFABLE_EXTERN(u16, g_CurFrameInput);
+DIFFABLE_EXTERN(u16, g_LastFrameInput);
 DIFFABLE_EXTERN(GameErrorContext, g_GameErrorContext);
 DIFFABLE_EXTERN(PbgArchive, g_PbgArchive);
 DIFFABLE_EXTERN(ZunMemory, g_ZunMemory);

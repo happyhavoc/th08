@@ -25,6 +25,20 @@ struct VertexTex1DiffuseXyzrhw
     D3DXVECTOR2 textureUV;
 };
 
+// Touhou 8 uses DirectX 8.1, but evidently Zun used some mismatched DirectX 8 headers as well
+// D3DXIMAGE_INFO changed from 20 to 28 bytes between DX8 and DX8.1, but somehow IN uses the the DX8 version
+// This struct is a redefinition of the DX8 D3DXIMAGE_INFO for that
+// The only reason this ABI mismatch doesn't cause issues is because no surface indices are ever loaded other than 0
+struct ZunImageInfo
+{
+    u32 width;
+    u32 height;
+    u32 depth;
+    u32 mipLevels;
+    D3DFORMAT format;
+};
+C_ASSERT(sizeof(ZunImageInfo) == 0x14);
+
 enum SprtBlendMode
 {
     SprtBlendMode_Unset = -1
@@ -80,11 +94,56 @@ struct SprtCtrl
         m_CameraMode = SortCameraMode_Unset;
     }
 
-    unknown_fields(0x0, 0x1c24);
+    void ReleaseSurfaces()
+    {
+        i32 i;
+
+        for (i = 0; i < ARRAY_SIZE_SIGNED(m_Surfaces); i++)
+        {
+            if (m_Surfaces[i] != NULL)
+            {
+                m_Surfaces[i]->Release();
+                m_Surfaces[i] = NULL;
+            }
+        }
+    }
+
+    void TakeScreencaptures()
+    {
+        if (m_CaptureAnmIdx > -1)
+        {
+            CaptureToTexture(m_CaptureAnmIdx, m_TextureCaptureSrcX, m_TextureCaptureSrcY, m_TextureCaptureSrcW, m_TextureCaptureSrcH,
+                            m_TextureCaptureDstX, m_TextureCaptureDstY, m_TextureCaptureDstW, m_TextureCaptureDstH);
+            m_CaptureAnmIdx = -1;
+        }
+
+        if (m_CaptureSurfaceIdx > -1)
+        {
+            CaptureToSurface(m_CaptureSurfaceIdx, m_SurfaceCaptureSrcX, m_SurfaceCaptureSrcY, m_SurfaceCaptureSrcW, m_SurfaceCaptureSrcH,
+                            m_SurfaceCaptureDstX, m_SurfaceCaptureDstY, m_SurfaceCaptureDstW, m_SurfaceCaptureDstH);
+            m_CaptureSurfaceIdx = -1;
+        }
+    }
+
+    void CaptureToTexture (i32 captureAnmIdx, i32 srcX, i32 srcY, i32 srcW, i32 srcH, i32 dstX, i32 dstY, i32 dstW, i32 dstH);
+    void CaptureToSurface (i32 captureSurfaceIdx, i32 srcX, i32 srcY, i32 srcW, i32 srcH, i32 dstX, i32 dstY, i32 dstW, i32 dstH);
+
+    unknown_fields(0x0, 0x8);
+    i32 m_CaptureSurfaceIdx;
+    unknown_fields(0xc, 0x1c18);
     D3DXVECTOR3 unk0x1c24;
     unknown_fields(0x1c30, 0x34);
     Sprt unk0x1c64;
-    unknown_fields(0x1f08, 0x5b4);
+    unknown_fields(0x1f08, 0x130);
+
+    IDirect3DSurface8 *m_Surfaces[32];
+    IDirect3DSurface8 *m_SurfacesBis[32];
+    u8 *m_SurfaceData[32];
+    u32 m_SurfaceDataSizes[32];
+    ZunImageInfo m_SurfaceInfo[32];
+
+    unknown_fields(0x24b8, 0x4);
+
     IDirect3DBaseTexture8 *m_CurrentTexture;
     u8 m_CurrentBlendMode;
     u8 m_CurrentColorOp;
@@ -99,7 +158,23 @@ struct SprtCtrl
     VertexTex1DiffuseXyzrhw m_TexturedVector[0x18000];
     VertexTex1DiffuseXyzrhw *m_DrawBufferEndPtr;
     VertexTex1DiffuseXyzrhw *m_DrawBufferStartPtr;
-    unknown_fields(0x2a252c, 0x44);
+    i32 m_CaptureAnmIdx;
+    i32 m_TextureCaptureSrcX;
+    i32 m_TextureCaptureSrcY;
+    i32 m_TextureCaptureSrcW;
+    i32 m_TextureCaptureSrcH;
+    i32 m_TextureCaptureDstX;
+    i32 m_TextureCaptureDstY;
+    i32 m_TextureCaptureDstW;
+    i32 m_TextureCaptureDstH;
+    i32 m_SurfaceCaptureSrcX;
+    i32 m_SurfaceCaptureSrcY;
+    i32 m_SurfaceCaptureSrcW;
+    i32 m_SurfaceCaptureSrcH;
+    i32 m_SurfaceCaptureDstX;
+    i32 m_SurfaceCaptureDstY;
+    i32 m_SurfaceCaptureDstW;
+    i32 m_SurfaceCaptureDstH;
 };
 C_ASSERT(sizeof(SprtCtrl) == 0x2a2570);
 

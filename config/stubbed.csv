@@ -1,3 +1,5 @@
 th08::GameWindow::Render
-th08::GameWindow::Present
-ScreenEffect::SetViewport
+th08::Supervisor::TakeSnapshot
+th08::ScreenEffect::SetViewport
+th08::SprtCtrl::CaptureToSurface
+th08::SprtCtrl::CaptureToTexture

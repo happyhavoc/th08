@@ -112,6 +112,7 @@ struct Supervisor
     ZunResult LoadConfig(char *configFile);
     void ThreadClose();
     void InitializeCriticalSections();
+    ZunBool TakeSnapshot(char *filePath);
 
     u32 IsShotSlowEnabled()
     {
@@ -201,7 +202,7 @@ struct Supervisor
     i32 m_CurState;
     i32 m_WantedState2;
     unknown_fields(0x164, 0x10);
-    u32 unk174;
+    i32 m_Unk174; // Commonly set for screen transitions and decremented once per frame, but never actually used for anything
     unknown_fields(0x178, 0x4);
     BOOL m_DisableVsync;
     ZunBool m_CouldSetRefreshRate;

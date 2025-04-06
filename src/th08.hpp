@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Background.hpp"
+#include "GameManager.hpp"
 #include "Global.hpp"
 #include "Midi.hpp"
 #include "ScreenEffect.hpp"

@@ -92,6 +92,7 @@ def configure(build_type):
 
         cxx_sources = [
             "Background",
+            "GameManager",
             "utils",
             "Global",
             "TextHelper",
@@ -99,7 +100,7 @@ def configure(build_type):
             "Midi",
             "Supervisor",
             "SoundPlayer",
-            "SprtCtrl"
+            "SprtCtrl",
             "zwave",
         ]
 

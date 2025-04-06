@@ -99,7 +99,7 @@
 
 // EN
 #define TH_EN_WINDOW_TITLE "Touhou Eiyashou ~ Imperishable Night. ver 1.00d"
-#define TH_JP_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ "Direct3D object could not be created for some reason\r\n"
+#define TH_EN_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ "Direct3D object could not be created for some reason\r\n"
 #define TH_EN_DBG_SCREEN_INIT_32BITS "First run, using 32-bit textures\r\n"
 #define TH_EN_DBG_SET_REFRESH_RATE_60HZ "Attempting to change refresh rate to 60Hz...\r\n"
 #define TH_EN_DBG_TRY_ASYNC_VSYNC "Testing whether async vsync is possible...\r\n"

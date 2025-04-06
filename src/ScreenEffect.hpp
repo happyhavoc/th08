@@ -8,7 +8,7 @@ namespace th08
 {
 struct ScreenEffect
 {
-    static void SetViewPort(D3DCOLOR clearColor);
+    static void SetViewport(D3DCOLOR clearColor);
 
     unknown_fields(0x0, 0x34);
 };
