@@ -108,7 +108,7 @@ struct SupervisorFlags
     u32 unk1 : 1; // Unconditionally set in InitD3DRendering. Never cleared?
     u32 using32BitGraphics : 1;
     u32 unk3 : 1;
-    u32 unk4 : 1;
+    u32 d3dDevDisconnectFlag : 1;
     u32 unk5 : 1;
     u32 unk6 : 1; // Set if LPTITLE is NULL in the startup info, which seems to never be true?
     u32 receivedCloseMsg : 1;
@@ -116,9 +116,12 @@ struct SupervisorFlags
 
 struct Supervisor
 {
+    static i32 RegisterChain();
+
     ZunResult LoadConfig(char *configFile);
     void ThreadClose();
     void InitializeCriticalSections();
+    void DeleteCriticalSections();
     ZunBool TakeSnapshot(char *filePath);
     u32 DisableFog();
 

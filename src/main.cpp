@@ -7,12 +7,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+#include <winnls32.h>
 #include "Background.hpp"
 #include "diffbuild.hpp"
 #include "GameManager.hpp"
+#include "Global.hpp"
 #include "i18n.hpp"
 #include "inttypes.hpp"
-#include "Global.hpp"
+#include "ResultScreen.hpp"
 #include "ScreenEffect.hpp"
 #include "Supervisor.hpp" // Official name: mother.hpp
 #include "SoundPlayer.hpp"
@@ -27,7 +29,8 @@ namespace th08
 enum RenderResult {
     RENDER_RESULT_KEEP_RUNNING = 0,
     RENDER_RESULT_EXIT_SUCCESS = 1,
-    RENDER_RESULT_EXIT_ERROR = 2
+    RENDER_RESULT_EXIT_ERROR = 2,
+    RENDER_RESULT_EXIT_SUCCESS_2 = -1
 };
 
 // MSVC tries to align 64-bit types even on 32-bit builds, so the pack is required
@@ -75,8 +78,217 @@ DIFFABLE_STATIC(GameWindow, g_GameWindow);
 
 using namespace th08;
 
+#pragma var_order(d3dDeviceStatus, msg, renderResult, i)
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPTSTR pCmdLine, int nCmdShow)
 {
+    HRESULT d3dDeviceStatus;
+    i32 i;
+    MSG msg;
+    i32 renderResult;
+
+    renderResult = RENDER_RESULT_KEEP_RUNNING;
+
+    g_Supervisor.m_hInstance = hInstance;
+
+    SystemParametersInfoA(SPI_GETSCREENSAVEACTIVE, 0, &g_GameWindow.m_ScreenSaveActive, 0);
+    SystemParametersInfoA(SPI_GETLOWPOWERACTIVE, 0, &g_GameWindow.m_LowPowerActive, 0);
+    SystemParametersInfoA(SPI_GETPOWEROFFACTIVE, 0, &g_GameWindow.m_PowerOffActive, 0);
+    SystemParametersInfoA(SPI_SETSCREENSAVEACTIVE, 0, (LPVOID *) false, SPIF_SENDCHANGE);
+    SystemParametersInfoA(SPI_SETLOWPOWERACTIVE, 0, (LPVOID *) false, SPIF_SENDCHANGE);
+    SystemParametersInfoA(SPI_SETPOWEROFFACTIVE, 0, (LPVOID *) false, SPIF_SENDCHANGE);
+
+    g_Supervisor.InitializeCriticalSections();
+    g_GameErrorContext.Log(TH_ERR_LOGGER_START);
+
+    if (GameWindow::CheckForRunningGameInstance(hInstance) == ZUN_ERROR)
+    {
+        goto stop;
+    }
+
+    if (g_Supervisor.LoadConfig("th08.cfg") != ZUN_SUCCESS)
+    {
+        goto stop;
+    }
+
+    GameWindow::CalcExecutableChecksum();
+    QueryPerformanceFrequency(&g_GameWindow.m_PCFrequency);
+
+restart:
+    if (GameWindow::InitD3DInterface())
+    {
+        goto stop;
+    }
+
+    if (GameWindow::CreateGameWindow(hInstance))
+    {
+        goto stop;
+    }
+
+    if (GameWindow::InitD3DRendering())
+    {
+        goto stop;
+    }
+
+    g_SoundPlayer.InitializeDSound(g_GameWindow.m_Window);
+    Controller::GetJoystickCaps();
+    Controller::ResetKeyboard();
+
+    g_SprtCtrl = (SprtCtrl *) g_ZunMemory.AddToRegistry(new SprtCtrl(), sizeof(SprtCtrl), "SprtCtrlInf");
+    
+    if (!g_Supervisor.IsWindowed())
+    {
+        WINNLSEnableIME(NULL, FALSE);
+        ShowCursor(FALSE);
+        SetCursor(NULL);
+    }
+
+    renderResult = Supervisor::RegisterChain();
+
+    if (renderResult != RENDER_RESULT_KEEP_RUNNING)
+    {
+        // This seems to be the only way to match assembly? But also why would anyone write code this way
+        if (renderResult == RENDER_RESULT_EXIT_SUCCESS_2)
+        {
+            goto awfulConditionalBreak;
+        }
+
+        renderResult = RENDER_RESULT_EXIT_ERROR;
+    }
+    else
+    {
+        renderResult = RENDER_RESULT_KEEP_RUNNING;
+
+        g_GameWindow.m_FramesSinceRedraw = -4;
+        g_GameWindow.m_LastFrameTime = 0;
+        g_GameWindow.m_LastTimestamp = g_GameWindow.m_LastFrameTime;
+        g_GameWindow.m_CurTimestamp = g_GameWindow.m_LastTimestamp;
+
+        while (!g_GameWindow.m_WindowIsClosing)
+        {
+            if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            }
+            else
+            {
+                d3dDeviceStatus = g_Supervisor.m_D3dDevice->TestCooperativeLevel();
+
+                if (d3dDeviceStatus == D3D_OK)
+                {
+                    renderResult = g_GameWindow.Render();
+
+                    if (renderResult != RENDER_RESULT_KEEP_RUNNING)
+                    {
+                        break;
+                    }
+
+                    g_Supervisor.m_Flags.d3dDevDisconnectFlag = 0;
+                }
+                else if (d3dDeviceStatus == D3DERR_DEVICENOTRESET)
+                {
+                    g_SprtCtrl->ReleaseSurfaces();
+
+                    if (g_Supervisor.m_D3dDevice->Reset(&g_Supervisor.m_PresentParameters) != D3D_OK)
+                    {
+                        break;
+                    }
+
+                    GameWindow::ResetRenderState();
+                    g_Supervisor.m_Unk174 = 3;
+                    g_Supervisor.m_Flags.d3dDevDisconnectFlag = 1;
+                }
+            }
+        }
+    }
+
+awfulConditionalBreak:
+    if (g_GameManager.plst.base.magic != 0)
+    {
+        ResultScreen::RegisterChain(2);
+    }
+
+    g_Chain.Release();
+
+    while (g_SoundPlayer.ProcessQueues() != 0);
+
+stop:
+    Sleep(1000);
+
+    g_SoundPlayer.Release();
+    g_ZunMemory.RemoveFromRegistry(g_SprtCtrl);
+    delete g_SprtCtrl;
+    g_SprtCtrl = NULL;
+    
+    if (g_Supervisor.m_D3dDevice != NULL)
+    {
+        g_Supervisor.m_D3dDevice->Reset(&g_Supervisor.m_PresentParameters);
+    }
+
+    if (g_Supervisor.m_D3dDevice != NULL)
+    {
+        g_Supervisor.m_D3dDevice->Release();
+        g_Supervisor.m_D3dDevice = NULL;
+    }
+
+    if (g_Supervisor.m_D3dIface != NULL)
+    {
+        g_Supervisor.m_D3dIface->Release();
+        g_Supervisor.m_D3dIface = NULL;
+    }
+
+    if (g_GameWindow.m_Window != NULL)
+    {
+        ShowWindow(g_GameWindow.m_Window, SW_HIDE);
+        MoveWindow(g_GameWindow.m_Window, 0, 0, 0, 0, FALSE);
+        DestroyWindow(g_GameWindow.m_Window);
+        g_GameWindow.m_Window = NULL;
+    }
+
+    ShowCursor(TRUE);
+
+    if (renderResult == RENDER_RESULT_EXIT_ERROR)
+    {
+        g_GameErrorContext.ResetContext();
+        g_GameErrorContext.Log(TH_ERR_OPTION_CHANGED_RESTART);
+
+        if (!g_Supervisor.IsWindowed())
+        {
+            WINNLSEnableIME(NULL, TRUE);
+        }
+
+        for (i = 0; i < 60;)
+        {
+            if (PeekMessageA(&msg, NULL, 0, 0, PM_REMOVE))
+            {
+                TranslateMessage(&msg);
+                DispatchMessageA(&msg);
+            }
+
+            i++;
+        }
+
+        goto restart;
+    }
+
+    FileSystem::WriteDataToFile("th08.cfg", &g_Supervisor.m_Cfg, 60);
+
+    if (g_Supervisor.midiOutput != NULL)
+    {
+        g_Supervisor.midiOutput->StopPlayback();
+        g_ZunMemory.RemoveFromRegistry(g_Supervisor.midiOutput);
+        delete g_Supervisor.midiOutput;
+        g_Supervisor.midiOutput = NULL;
+    }
+
+    g_GameErrorContext.Flush();
+    g_Supervisor.DeleteCriticalSections();
+
+    SystemParametersInfoA(SPI_SETSCREENSAVEACTIVE, g_GameWindow.m_ScreenSaveActive, NULL, SPIF_SENDCHANGE);
+    SystemParametersInfoA(SPI_SETLOWPOWERACTIVE, g_GameWindow.m_LowPowerActive, NULL, SPIF_SENDCHANGE);
+    SystemParametersInfoA(SPI_SETPOWEROFFACTIVE, g_GameWindow.m_PowerOffActive, NULL, SPIF_SENDCHANGE);
+    WINNLSEnableIME(NULL, TRUE);
+
     return 0;
 }
 

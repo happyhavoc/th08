@@ -4,6 +4,8 @@
 
 // JP
 #define TH_JP_WINDOW_TITLE "東方永夜抄　〜 Imperishable Night. ver 1.00d"
+#define TH_JP_ERR_LOGGER_START "東方動作記録 --------------------------------------------- \r\n"
+#define TH_JP_ERR_OPTION_CHANGED_RESTART "再起動を要するオプションが変更されたので再起動します\r\n"
 #define TH_JP_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ "Direct3D オブジェクトは何故か作成出来なかった\r\n"
 #define TH_JP_DBG_SCREEN_INIT_32BITS "初回起動、画面を 32Bits で初期化しました\r\n"
 #define TH_JP_DBG_SET_REFRESH_RATE_60HZ "リフレッシュレートを60Hzに変更を試みます\r\n"
@@ -99,6 +101,8 @@
 
 // EN
 #define TH_EN_WINDOW_TITLE "Touhou Eiyashou ~ Imperishable Night. ver 1.00d"
+#define TH_EN_ERR_LOGGER_START "Touhou log ---------------------------------------------\r\n"
+#define TH_EN_ERR_OPTION_CHANGED_RESTART "An option that requires a restart has been changed.\r\n"
 #define TH_EN_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ "Direct3D object could not be created for some reason\r\n"
 #define TH_EN_DBG_SCREEN_INIT_32BITS "First run, using 32-bit textures\r\n"
 #define TH_EN_DBG_SET_REFRESH_RATE_60HZ "Attempting to change refresh rate to 60Hz...\r\n"
@@ -196,6 +200,8 @@
 #define TH_MAKE_LANG_STR(lang, id) TH_CONCAT_HELPER(lang, id)
 
 #define TH_WINDOW_TITLE TH_MAKE_LANG_STR(TH_LANG, _WINDOW_TITLE)
+#define TH_ERR_LOGGER_START TH_MAKE_LANG_STR(TH_LANG, _ERR_LOGGER_START)
+#define TH_ERR_OPTION_CHANGED_RESTART TH_MAKE_LANG_STR(TH_LANG, _ERR_OPTION_CHANGED_RESTART)
 #define TH_ERR_D3D_ERR_COULD_NOT_CREATE_OBJ TH_MAKE_LANG_STR(TH_LANG, _ERR_D3D_ERR_COULD_NOT_CREATE_OBJ)
 #define TH_DBG_SCREEN_INIT_32BITS TH_MAKE_LANG_STR(TH_LANG, _DBG_SCREEN_INIT_32BITS)
 #define TH_DBG_SET_REFRESH_RATE_60HZ TH_MAKE_LANG_STR(TH_LANG, _DBG_SET_REFRESH_RATE_60HZ)

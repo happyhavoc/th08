@@ -69,6 +69,8 @@ C_ASSERT(sizeof(Sprt) == 0x2a4);
 // Unofficial name: AnmManager
 struct SprtCtrl
 {
+    ~SprtCtrl() { }
+
     void ClearBlendMode()
     {
         m_CurrentBlendMode = SprtBlendMode_Unset;
