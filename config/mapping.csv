@@ -694,7 +694,7 @@ FUN_00445bc0,0x445bc0,0x14,__fastcall,,u32,Supervisor*
 FUN_00445bd4,0x445bd4,0x16a,__fastcall,,u32,Supervisor*
 FUN_00445d3e,0x445d3e,0xff,unknown,,u8
 FUN_00445e3d,0x445e3d,0x6a,unknown,,u8,u8,u8
-th08::Supervisor::RegisterChain,0x445ea7,0xfc,unknown,,u8
+th08::Supervisor::RegisterChain,0x445ea7,0xfc,__fastcall,,i32
 th08::Supervisor::AddedCallback,0x445fa3,0x1fd,__fastcall,,u32,Supervisor*
 FUN_004461a0,0x4461a0,0x92,unknown,,u8
 FUN_00446232,0x446232,0x296,unknown,,u8
