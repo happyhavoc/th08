@@ -380,7 +380,7 @@ FUN_004298f0,0x4298f0,0x83,unknown,,u8
 FUN_00429980,0x429980,0x3b7,unknown,,u8
 FUN_00429d40,0x429d40,0x93,unknown,,u8
 th08::ZunMemory::AddToRegistry,0x429de0,0x10,__thiscall,,void*,ZunMemory*,void*,u32,char*
-th08::ZunMemory::RemoveFromRegistry,0x429df0,0xd,__thiscall,,u8,ZunMemory*,void*
+th08::ZunMemory::RemoveFromRegistry,0x429df0,0xd,__thiscall,,void,ZunMemory*,void*
 FUN_00429e00,0x429e00,0x405,unknown,,u8
 th08::EnemyManager::EnemyManager,0x42a210,0x61,unknown,,u8
 FUN_0042a280,0x42a280,0x18a,unknown,,u8
@@ -547,7 +547,7 @@ FUN_0043c317,0x43c317,0xb,unknown,,u8
 FUN_0043c322,0x43c322,0x3d,unknown,,u8
 FUN_0043c35f,0x43c35f,0x134,unknown,,u8
 FUN_0043c4b3,0x43c4b3,0x112,unknown,,u8
-th08::GameManager::GameManager,0x43c5e1,0x60,unknown,,u8
+th08::GameManager::GameManager,0x43c5e1,0x60,__thiscall,,GameManager*,GameManager*
 FUN_0043c641,0x43c641,0x45,unknown,,u8,u8
 FUN_0043c686,0x43c686,0x81,unknown,,u8
 th08::Chain::~Chain,0x43c710,0x4b,unknown,,u8
@@ -564,20 +564,20 @@ th08::Chain::Release,0x43ce30,0x30,__thiscall,,void,Chain*
 th08::Chain::CreateElem,0x43ce60,0xa2,__thiscall,,ChainElem*,Chain*,u32
 th08::Chain::Cut,0x43cf10,0x31,__thiscall,,void,Chain*,ChainElem*
 th08::Chain::CutImpl,0x43cf50,0x16a,__thiscall,,void,Chain*,ChainElem*
-th08::Controller::GetJoystickCaps,0x43d0c0,0x55,unknown,,u8
+th08::Controller::GetJoystickCaps,0x43d0c0,0x55,__fastcall,,u16
 th08::Controller::GetControllerInput,0x43d120,0x5b1,unknown,,u8
 th08::Controller::SetButtonFromDirectInputJoystate,0x43d6e0,0x7a,__fastcall,,u8,u32,u16,u16,uchar*
 th08::Controller::SetButtonFromControllerInputs,0x43d760,0x73,__fastcall,,u8,u32,u16,u16,u32
 th08::Controller::GetControllerState,0x43d7e0,0x188,unknown,,uchar*
 th08::Controller::GetInput,0x43d970,0x7ed,unknown,,u8
-th08::Controller::ResetKeyboard,0x43e160,0x6e,unknown,,u8
+th08::Controller::ResetKeyboard,0x43e160,0x6e,__fastcall,,void
 th08::FileSystem::Decrypt,0x43e1d0,0x1c0,__fastcall,,u8*,u8*,u32,u8,char,i32,i32
 th08::FileSystem::TryDecryptFromTable,0x43e390,0x106,unknown,,u8,u8
 th08::FileSystem::Encrypt,0x43e4a0,0x1c0,unknown,,u8,u8,u8,u8,u8
 th08::FileSystem::OpenFile,0x43e660,0x213,__fastcall,,uchar*,char*,i32*,i32
 th08::FileSystem::CheckIfFileAlreadyExists,0x43e880,0x69,__fastcall,,bool,char*
-th08::FileSystem::WriteDataToFile,0x43e8f0,0x10b,unknown,,u8,u8
-th08::GameErrorContext::Log,0x43ea00,0x151,__stdcall,,char*,GameErrorContext*,u32
+th08::FileSystem::WriteDataToFile,0x43e8f0,0x10b,__fastcall,,i32,char*,void*,u32
+th08::GameErrorContext::Log,0x43ea00,0x151,__stdcall,,char*,GameErrorContext*,char*
 th08::GameErrorContext::Fatal,0x43eb60,0x157,__cdecl,varargs,char*,GameErrorContext*,char*
 th08::Rng::GetRandomU16,0x43ecc0,0x58,__thiscall,,u16,Rng*
 th08::Rng::GetRandomU32,0x43ed20,0x28,__thiscall,,u32,Rng*
@@ -649,12 +649,12 @@ th08::GameWindow::CalcExecutableChecksum,0x443730,0x10a,__fastcall,,ZunResult
 th08::GameWindow::ResolveIt,0x443840,0x142,__fastcall,,ZunBool,char*,char*,i32
 th08::GameErrorContext::ResetContext,0x443990,0x23,__thiscall,,void,GameErrorContext*
 th08::GameErrorContext::Flush,0x4439c0,0x85,__thiscall,,void,GameErrorContext*
-th08::Supervisor::IsHardwareBlendingEnabled,0x443a50,0x17,__thiscall,,u32,Supervisor*
+th08::Supervisor::IsHardwareBlendingDisabled,0x443a50,0x17,__thiscall,,u32,Supervisor*
 th08::Supervisor::IsVertexBufferDisabled,0x443a70,0x19,__thiscall,,u32,Supervisor*
 th08::Supervisor::Is16bitColorMode,0x443a90,0x1a,__thiscall,,u32,Supervisor*
 th08::Supervisor::IsReferenceRasterizerMode,0x443ab0,0x1a,__thiscall,,u32,Supervisor*
-th08::Supervisor::IsWindowed,0x443ad0,0x15,__thiscall,,u8,Supervisor*
-th08::SprtCtrl::ReleaseSurfaces,0x443af0,0x68,__thiscall,,u8,SprtCtrl*
+th08::Supervisor::IsWindowed,0x443ad0,0x15,__thiscall,,ZunBool,Supervisor*
+th08::SprtCtrl::ReleaseSurfaces,0x443af0,0x68,__thiscall,,void,SprtCtrl*
 th08::SprtCtrl::TakeScreencaptures,0x443b60,0xf8,__thiscall,,u8,SprtCtrl*
 th08::MidiDevice::MidiDevice,0x443c60,0x21,__thiscall,,MidiDevice*,MidiDevice*
 th08::MidiDevice::~MidiDevice,0x443c90,0x13,__thiscall,,void,MidiDevice*
@@ -679,7 +679,7 @@ th08::MidiOutput::Ntohl,0x4444e0,0x28,unknown,,u8
 th08::MidiOutput::LoadFile,0x444510,0x3a,__thiscall,,u32,MidiOutput*,char*
 th08::MidiOutput::LoadTracks,0x444550,0xcb,__thiscall,,void,MidiOutput*
 th08::MidiOutput::Play,0x444620,0x51,__thiscall,,u32,MidiOutput*
-th08::MidiOutput::StopPlayback,0x444680,0x7a,__thiscall,,u32,MidiOutput*
+th08::MidiOutput::StopPlayback,0x444680,0x7a,__thiscall,,ZunResult,MidiOutput*
 th08::MidiOutput::UnprepareHeader,0x444700,0xc5,__thiscall,,u32,MidiOutput*,u32*
 th08::MidiOutput::SetFadeOut,0x4447d0,0x4f,__thiscall,,u32,MidiOutput*,u32
 th08::MidiOutput::OnTimerElapsed,0x444820,0x26b,__thiscall,,void,MidiOutput*
@@ -702,14 +702,14 @@ th08::Supervisor::StartupThread,0x4464c8,0x56f,unknown,,u8
 th08::Supervisor::SetupDInput,0x446a37,0x290,__thiscall,,u32,Supervisor*
 FUN_00446cc7,0x446cc7,0x3f,__stdcall,,i32,i32
 th08::Supervisor::DeletedCallback,0x446d06,0x205,__fastcall,,u32,Supervisor*
-FUN_00446f0b,0x446f0b,0x37,unknown,,u8
+th08::SprtCtrl::FUN_00446f0b,0x446f0b,0x37,__thiscall,,u8,SprtCtrl*
 FUN_00446f42,0x446f42,0x11,__fastcall,,void,u32
 FUN_00446f53,0x446f53,0x342,__fastcall,,void,ZunBool
 th08::ZunTimer::Increment,0x447295,0xc6,__thiscall,,void,ZunTimer*,i32
 th08::ZunTimer::Decrement,0x44735b,0xc6,__thiscall,,void,ZunTimer*,i32
 th08::Supervisor::TickTimer,0x447421,0x6e,__thiscall,,void,Supervisor*,i32*,f32*
 th08::Supervisor::TakeSnapshot,0x44748f,0x2d5,__thiscall,,ZunBool,Supervisor*,char*
-FUN_00447764,0x447764,0x4d,unknown,,u8
+th08::SoundPlayer::FUN_00447764,0x447764,0x4d,__thiscall,,u8,SoundPlayer*
 th08::Supervisor::LoadConfig,0x4477b1,0x553,__thiscall,,ZunResult,Supervisor*,char*
 FUN_00447d04,0x447d04,0x52,unknown,,u8
 th08::Supervisor::LoadMusic,0x447d56,0xf1,__thiscall,,u32,Supervisor*,char*
@@ -725,7 +725,7 @@ th08::Supervisor::UpdatePlayTime,0x4482a1,0x177,__thiscall,,void,Supervisor*
 th08::Supervisor::UpdateGameTime,0x448418,0x175,__thiscall,,void,Supervisor*
 th08::Supervisor::FUN_0044858d,0x44858d,0x12d,__thiscall,,u32,Supervisor*,char*,i32,i32
 th08::Supervisor::ThreadStart,0x4486ba,0x61,__thiscall,,ZunResult,Supervisor*,PTHREAD_START_ROUTINE*,void*
-th08::Supervisor::ThreadClose,0x44871b,0x75,__thiscall,,u8,Supervisor*
+th08::Supervisor::ThreadClose,0x44871b,0x75,__thiscall,,void,Supervisor*
 th08::Supervisor::FUN_00448790,0x448790,0x8a,__thiscall,,void,Supervisor*,u32*
 th08::Supervisor::FUN_0044881a,0x44881a,0x55,__thiscall,,void,Supervisor*
 th08::Supervisor::FUN_0044886f,0x44886f,0x103,__thiscall,,void,Supervisor*,u32*
@@ -735,7 +735,7 @@ th08::Supervisor::InitializeCriticalSections,0x4489f9,0x36,__thiscall,,void,Supe
 th08::Supervisor::DeleteCriticalSections,0x448a2f,0x36,__thiscall,,void,Supervisor*
 FUN_00448a65,0x448a65,0xb1,unknown,,u8
 FUN_00448b16,0x448b16,0x73e,unknown,,u8
-FUN_00449254,0x449254,0xdd,unknown,,u8
+th08::MusicRoom::RegisterChain,0x449254,0xdd,unknown,,u8
 FUN_00449331,0x449331,0x68,unknown,,u8
 FUN_00449399,0x449399,0xee,unknown,,u8
 FUN_00449487,0x449487,0x288,unknown,,u8
@@ -894,18 +894,18 @@ FUN_0045afc0,0x45afc0,0x35,unknown,,u8
 th08::ScreenEffect::ScreenEffect,0x45b000,0x19,unknown,,u8
 th08::ScreenEffect::Clear,0x45b020,0xbe,__fastcall,,u8,unsigned long
 th08::ScreenEffect::SetViewport,0x45b0e0,0x7c,__fastcall,,void,unsigned long
-FUN_0045b160,0x45b160,0x7b,unknown,,u8
+th08::ScreenEffect::CalcFadeIn,0x45b160,0x7b,__fastcall,,bool,ScreenEffect*
 th08::ScreenEffect::DrawSquare,0x45b1e0,0x2af,__fastcall,,void,ZunRect*,unsigned long
 th08::ScreenEffect::DrawSquareShaded,0x45b490,0x2cd,__fastcall,,void,ZunRect*,unsigned long,unsigned long,unsigned long,unsigned long
-FUN_0045b760,0x45b760,0x9b,unknown,,u8
+th08::ScreenEffect::CalcFadeOut,0x45b760,0x9b,__fastcall,,u32,ScreenEffect*
 FUN_0045b800,0x45b800,0xa9,unknown,,u8
-FUN_0045b8b0,0x45b8b0,0x274,unknown,,u8,u8,u8,u8,u8
-FUN_0045bb50,0x45bb50,0x91,unknown,,u8
+th08::ScreenEffect::RegisterChain,0x45b8b0,0x274,__fastcall,,u8,ScreenEffects,i32,i32,i32,i32,i32
+th08::ScreenEffect::DrawFullFade,0x45bb50,0x91,__fastcall,,u32,ScreenEffect*
 FUN_0045bbf0,0x45bbf0,0x45,unknown,,u8
-FUN_0045bc40,0x45bc40,0x45,unknown,,u8
+th08::ScreenEffect::DrawArcadeFade,0x45bc40,0x45,__fastcall,,u32,ScreenEffect*
 FUN_0045bc90,0x45bc90,0xd2,unknown,,u8
 FUN_0045bd70,0x45bd70,0x4c,unknown,,u8
-FUN_0045bdc0,0x45bdc0,0x14c,unknown,,u8
+th08::ScreenEffect::CalcShake,0x45bdc0,0x14c,__fastcall,,u32,ScreenEffect*
 FUN_0045bf10,0x45bf10,0x1cb,unknown,,u8
 FUN_0045c0e0,0x45c0e0,0x1a,unknown,,u8
 FUN_0045c100,0x45c100,0x5e,unknown,,u8
@@ -954,8 +954,8 @@ th08::SprtCtrl::FUN_004623c0,0x4623c0,0x390,__thiscall,,void,SprtCtrl*,Sprt*
 FUN_00462750,0x462750,0x34,__fastcall,,u8,uchar,uchar
 th08::SprtCtrl::SetRenderStateForVm,0x462790,0x116,__thiscall,,u8,SprtCtrl*,Sprt*
 th08::SprtCtrl::FUN_004628b0,0x4628b0,0x54f,__thiscall,,u8,SprtCtrl*,Sprt*,u32
-th08::SprtCtrl::ClearVertexBuffer,0x462e00,0x3c,__thiscall,,u8,SprtCtrl*
-th08::SprtCtrl::FlushDrawBuffer,0x462e40,0xc6,__thiscall,,void,SprtCtrl*
+th08::SprtCtrl::ClearVertexBuffer,0x462e00,0x3c,__thiscall,,void,SprtCtrl*
+th08::SprtCtrl::FlushVertexBuffer,0x462e40,0xc6,__thiscall,,void,SprtCtrl*
 th08::SprtCtrl::AddSpriteToDrawBuffer,0x462f10,0xd3,__thiscall,,u8,SprtCtrl*,void*
 th08::SprtCtrl::DrawNoRotation,0x462ff0,0x1d5,__thiscall,,u32,SprtCtrl*,Sprt*
 FUN_004631d0,0x4631d0,0x3a,unknown,,u8,u8,u8,u8,u8,u8,u8,u8
@@ -1001,7 +1001,7 @@ th08::SprtCtrl::FUN_00466bb0,0x466bb0,0x1bd,__thiscall,,u8,SprtCtrl*,i32,i32,i32
 FUN_00466d70,0x466d70,0x1a8,unknown,,u8,u8,u8,u8,u8,u8,u8,u8
 th08::SprtCtrl::CaptureToTexture,0x466f20,0x11e,__thiscall,,void,SprtCtrl*,i32,i32,i32,i32,i32,i32,i32,i32,i32
 FUN_00467040,0x467040,0x133,unknown,,u8,u8,u8,u8,u8,u8,u8
-th08::SprtCtrl::CaptureToSurface,0x467180,0x219,__thiscall,,u8,SprtCtrl*,u8,u8,u8,u8,u8,u8,u8,u8,u8
+th08::SprtCtrl::CaptureToSurface,0x467180,0x219,__thiscall,,void,SprtCtrl*,i32,i32,i32,i32,i32,i32,i32,i32,i32
 FUN_00467399,0x467399,0x10d,unknown,,u8
 FUN_004674e0,0x4674e0,0xe77,unknown,,u8
 FUN_0046837b,0x46837b,0x1148,unknown,,u8
@@ -1712,7 +1712,7 @@ __CIsin,0x4a3fa0,0x14,unknown,,u8
 FUN_004a3fbd,0x4a3fbd,0x91,unknown,,u8,u8
 __CIsqrt,0x4a4050,0x14,unknown,,u8
 FUN_004a406d,0x4a406d,0x9d,unknown,,u8,u8,u8
-_tanf,0x4a4110,0x14,default,,f32
+__CItan,0x4a4110,0x14,default,,f32
 FUN_004a412d,0x4a412d,0x95,unknown,,u8,u8
 __heap_alloc,0x4a41c2,0x6f,__cdecl,,u8,u8
 FUN_004a4234,0x4a4234,0x9,unknown,,u8
