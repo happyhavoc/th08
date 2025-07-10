@@ -2,6 +2,9 @@
 
 #include "inttypes.hpp"
 
+#define COLOR_BLACK 0xff000000
+#define COLOR_LIGHT_GREY 0xffa0a0a0
+
 #define COLOR_RGB_MASK 0x00FFFFFF
 #define COLOR_ALPHA_MASK 0xFF000000
 #define COLOR_RGB(color) ((color) & COLOR_RGB_MASK)

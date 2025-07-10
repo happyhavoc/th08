@@ -8,6 +8,7 @@
 #include "diffbuild.hpp"
 #include "inttypes.hpp"
 #include "utils.hpp"
+#include "ZunBool.hpp"
 
 namespace th08
 {
@@ -50,9 +51,16 @@ enum EffectQuality
     MAXIMUM
 };
 
+enum FogState
+{
+    FOG_DISABLED = 0,
+    FOG_ENABLED = 1,
+    FOG_UNSET = 0xff
+};
+
 struct GameConfigOpts
 {
-    u32 useD3dHwTextureBlending : 1;
+    u32 useSwTextureBlending : 1;
     u32 dontUseVertexBuf : 1;
     u32 force16bitTextures : 1;
     u32 clearBackBufferOnRefresh : 1;
@@ -94,10 +102,28 @@ struct GameConfiguration
     GameConfigOpts opts;
 };
 
+struct SupervisorFlags
+{
+    u32 usingHardwareTL : 1;
+    u32 unk1 : 1; // Unconditionally set in InitD3DRendering. Never cleared?
+    u32 using32BitGraphics : 1;
+    u32 unk3 : 1;
+    u32 d3dDevDisconnectFlag : 1;
+    u32 unk5 : 1;
+    u32 unk6 : 1; // Set if LPTITLE is NULL in the startup info, which seems to never be true?
+    u32 receivedCloseMsg : 1;
+};
+
 struct Supervisor
 {
+    static i32 RegisterChain();
+
     ZunResult LoadConfig(char *configFile);
     void ThreadClose();
+    void InitializeCriticalSections();
+    void DeleteCriticalSections();
+    ZunBool TakeSnapshot(char *filePath);
+    u32 DisableFog();
 
     u32 IsShotSlowEnabled()
     {
@@ -109,9 +135,49 @@ struct Supervisor
         return this->m_Cfg.opts.displayMinimumGraphics | this->m_Cfg.opts.clearBackBufferOnRefresh;
     }
 
+    ZunBool IsHardwareBlendingDisabled()
+    {
+        return m_Cfg.opts.useSwTextureBlending;
+    }
+
+    ZunBool IsVertexBufferDisabled()
+    {
+        return m_Cfg.opts.dontUseVertexBuf;
+    }
+
+    ZunBool Is16bitColorMode()
+    {
+        return m_Cfg.opts.force16bitTextures;
+    }
+
+    ZunBool IsDepthTestDisabled()
+    {
+        return m_Cfg.opts.disableDepthTest;
+    }
+
+    ZunBool IsColorCompositingDisabled()
+    {
+        return m_Cfg.opts.disableColorCompositing;
+    }
+
+    ZunBool IsFogDisabled()
+    {
+        return m_Cfg.opts.disableFog;
+    }
+
+    ZunBool IsReferenceRasterizerMode()
+    {
+        return m_Cfg.opts.referenceRasterizerMode;
+    }
+
     u32 IsMusicPreloadEnabled()
     {
         return this->m_Cfg.opts.preloadMusic;
+    }
+
+    ZunBool IsWindowed()
+    {
+        return m_Cfg.windowed;
     }
 
     void EnterCriticalSectionWrapper(int id)
@@ -147,14 +213,15 @@ struct Supervisor
     i32 m_CurState;
     i32 m_WantedState2;
     unknown_fields(0x164, 0x10);
-    u32 unk174;
+    i32 m_Unk174; // Commonly set for screen transitions and decremented once per frame, but never actually used for anything
     unknown_fields(0x178, 0x4);
     BOOL m_DisableVsync;
-    unknown_fields(0x180, 0x8);
+    ZunBool m_CouldSetRefreshRate;
+    i32 m_LastFrameTime; // Unused in IN
     f32 framerateMultiplier;
     MidiOutput *midiOutput;
     unknown_fields(0x190, 0x14);
-    u32 m_Flags;
+    SupervisorFlags m_Flags;
     DWORD m_TotalPlayTime;
     DWORD m_SystemTime;
     D3DCAPS8 m_D3dCaps;
@@ -167,7 +234,13 @@ struct Supervisor
     u8 m_LockCounts[4];
     DWORD unk2fc;
 
-    unknown_fields(0x300, 0x64);
+    unknown_fields(0x300, 0x50);
+
+    FogState m_FogState;
+    u32 m_ExeChecksum;
+    u32 m_ExeSize;
+
+    unknown_fields(0x35c, 0x8);
 };
 C_ASSERT(sizeof(Supervisor) == 0x364);
 

@@ -1,10 +1,17 @@
 #pragma once
 
+#include "Background.hpp"
+#include "GameManager.hpp"
 #include "Global.hpp"
 #include "Midi.hpp"
+#include "ResultScreen.hpp"
+#include "ScreenEffect.hpp"
 #include "SoundPlayer.hpp"
+#include "SprtCtrl.hpp"
 #include "Supervisor.hpp"
 #include "TextHelper.hpp"
+#include "ZunBool.hpp"
+#include "ZunResult.hpp"
 #include "dxutil.hpp"
 #include "i18n.hpp"
 #include "inttypes.hpp"

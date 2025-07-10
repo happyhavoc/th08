@@ -1,0 +1,10 @@
+th08::Supervisor::RegisterChain
+th08::Supervisor::DeleteCriticalSections
+th08::Supervisor::DisableFog
+th08::Supervisor::TakeSnapshot
+th08::ResultScreen::RegisterChain
+th08::ScreenEffect::SetViewport
+th08::SprtCtrl::CaptureToSurface
+th08::SprtCtrl::CaptureToTexture
+th08::SprtCtrl::ClearVertexBuffer
+th08::SprtCtrl::FlushVertexBuffer
