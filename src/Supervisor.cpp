@@ -8,7 +8,6 @@ namespace th08
 {
 DIFFABLE_STATIC(Supervisor, g_Supervisor);
 
-#pragma optimize("s", on)
 #pragma var_order(fileSize, configFileBuffer, bgmHandle, bytesRead, bgmBuffer, bgmHandle2, bytesRead2, bgmBuffer2)
 ZunResult Supervisor::LoadConfig(char *configFile)
 {
@@ -195,5 +194,4 @@ void Supervisor::InitializeCriticalSections() {
         InitializeCriticalSection(&m_CriticalSections[i]);
     }
 }
-#pragma optimize("", on)
 }; // namespace th08
