@@ -17,7 +17,6 @@ DIFFABLE_STATIC_ARRAY_ASSIGN(FormatInfo, 7, g_FormatInfoArray) = {
     {(D3DFORMAT)-1, 0, 0, 0, 0, 0},
 };
 
-#pragma optimize("s", on)
 TextHelper::TextHelper()
 {
     m_format = (D3DFORMAT)-1;
@@ -470,5 +469,4 @@ void TextHelper::RenderTextToTexture(i32 xPos, i32 yPos, i32 spriteWidth, i32 sp
     SAFE_RELEASE(destSurface);
     return;
 }
-#pragma optimize("", on)
 }; // namespace th08
